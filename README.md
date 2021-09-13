@@ -3,6 +3,21 @@
 A collection of libraries and command-line utilities for interacting with Palm
 OS devices, and the data stored on them.
 
+## Command-line tools
+
+To install the command-line tools:
+
+```shell
+% cargo install --git https://github.com/u1f408/palmrs.git palmrs
+```
+
+### Debugging / development tools
+
+To use these tools, enable the `cli-debug` feature when installing palm.rs
+(`cargo install --features cli-debug palmrs`, or similar).
+
+* Dump a Palm OS database file: `palmrs-db-dump`
+
 ## Library crates
 
 The library crates that make up palm.rs include:

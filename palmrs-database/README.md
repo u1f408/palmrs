@@ -14,6 +14,11 @@ Support for reading and writing the Palm OS database formats (PRC and PDB).
 
 Actual documentation Coming Soon™.
 
+For now, have a look at the code for [the `palmrs-db-dump` tool][db_dump] as
+an example of how to use this.
+
+[db_dump]: https://github.com/u1f408/palmrs/blob/main/src/bin/db_dump.rs
+
 <br>
 
 #### License

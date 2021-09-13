@@ -12,7 +12,20 @@ license = "MIT OR Apache-2.0"
 readme = "crates-io.md"
 
 [features]
+cli-debug = [ ]
+cli-all = [ "cli-debug" ]
+all = [ "cli-all" ]
 default = [ ]
 
 [dependencies]
 palmrs-database = { path = "./palmrs-database" }
+stable-eyre = { version = "0.2" }
+log = { version = "0.4" }
+env_logger = { version = "0.9" }
+structopt = { version = "0.3" }
+
+[[bin]]
+name = "palmrs-db-dump"
+required-features = [ "cli-debug" ]
+path = "src/bin/db_dump.rs"
+doc = false
