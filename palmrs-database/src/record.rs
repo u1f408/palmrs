@@ -23,6 +23,9 @@ pub trait DatabaseRecord: Sized + Debug {
 	/// Return the record's name, if known
 	fn name_str(&self) -> Option<&str>;
 
+	/// Return the record's attributes, if known
+	fn attributes(&self) -> Option<u32>;
+
 	/// Return the offset, from the start of the database file, of the record's data.
 	fn data_offset(&self) -> u32;
 

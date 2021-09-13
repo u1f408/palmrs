@@ -66,17 +66,22 @@ fn perform_dump_record<T: DatabaseRecord>(
 	data: &[u8],
 	opt: &Opt,
 ) -> Result<(), Report> {
+	log::trace!("records[{}] = {:#?}", idx, &record);
+
 	let (data_offset, data_len) = (
 		record.data_offset() as usize,
 		record.data_len().map(|x| x as usize).unwrap_or(0usize),
 	);
 
+	let attributes = record.attributes().unwrap_or(0);
+
 	println!(
-		"Record {:#X}: name={:?} offset={:#X} length={:#X}",
+		"Record {}: name={:?} offset={:#X} length={:#X} attributes={:#X}",
 		idx,
 		record.name_str().unwrap_or(""),
 		data_offset,
 		data_len,
+		attributes,
 	);
 
 	if opt.hexdump_records {

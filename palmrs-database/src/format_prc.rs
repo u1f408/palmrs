@@ -94,6 +94,10 @@ impl DatabaseRecord for PrcRecordHeader {
 		self.name_try_str().ok()
 	}
 
+	fn attributes(&self) -> Option<u32> {
+		None
+	}
+
 	fn data_offset(&self) -> u32 {
 		self.data_offset
 	}
