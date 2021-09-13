@@ -90,6 +90,10 @@ impl DatabaseRecord for PrcRecordHeader {
 		Ok(created_header)
 	}
 
+	fn name_str(&self) -> Option<&str> {
+		self.name_try_str().ok()
+	}
+
 	fn data_offset(&self) -> u32 {
 		self.data_offset
 	}

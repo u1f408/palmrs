@@ -20,13 +20,14 @@ pub trait DatabaseRecord: Sized + Debug {
 	/// Read the record header from the given byte array.
 	fn from_bytes(data: &[u8], pos: usize) -> Result<Self, io::Error>;
 
+	/// Return the record's name, if known
+	fn name_str(&self) -> Option<&str>;
+
 	/// Return the offset, from the start of the database file, of the record's data.
 	fn data_offset(&self) -> u32;
 
 	/// Return the length of the record's data, if known.
-	fn data_len(&self) -> Option<u32> {
-		None
-	}
+	fn data_len(&self) -> Option<u32>;
 }
 
 /// Iterator over the records in a database
