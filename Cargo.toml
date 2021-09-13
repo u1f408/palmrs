@@ -1,0 +1,11 @@
+[workspace]
+members = [
+    "palmrs-*",
+]
+
+[package]
+resolver = "2"
+edition = "2018"
+name = "palmrs"
+version = "0.1.0-dev.1"
+license = "MIT OR Apache-2.0"

@@ -1,0 +1,8 @@
+.env
+.env.*
+.envrc
+
+/target
+/result
+
+.trigger
