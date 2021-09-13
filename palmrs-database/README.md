@@ -1,17 +1,18 @@
-# palm.rs
+# palmrs-database
 
-A collection of libraries and command-line utilities for interacting with Palm
-OS devices, and the data stored on them.
+Support for reading and writing the Palm OS database formats (PRC and PDB).
 
-## Library crates
+## Implementation status
 
-The library crates that make up palm.rs include:
+* [x] PRC records
+* [ ] PDB records
+* [x] Reading in a database
+* [ ] Database modifications
+* [ ] Writing out a modified database
 
-* Palm OS database support (PRC/PDB files): [palmrs-database][]
+## Usage
 
-
-[palmrs-database]: ./palmrs-database/README.md
-
+Actual documentation Coming Soon™.
 
 <br>
 

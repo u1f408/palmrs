@@ -3,15 +3,17 @@
 A collection of libraries and command-line utilities for interacting with Palm
 OS devices, and the data stored on them.
 
-## Library crates
+The `palmrs` crate itself contains the palm.rs command-line utilities, as well
+as re-exporting the palm.rs subcrates. It's extremely likely that you don't
+want to add a dependency on the `palmrs` crate directly - instead, your crate
+should add dependencies on the individual palm.rs crates that it actually
+requires to function.
 
-The library crates that make up palm.rs include:
+For more information, including the list of available palm.rs subcrates, and
+the list of command-line utilities included in this crate, have a look at
+[the palm.rs repository on GitHub][repo].
 
-* Palm OS database support (PRC/PDB files): [palmrs-database][]
-
-
-[palmrs-database]: ./palmrs-database/README.md
-
+[repo]: https://github.com/u1f408/palmrs
 
 <br>
 

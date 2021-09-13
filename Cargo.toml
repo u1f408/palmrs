@@ -9,3 +9,10 @@ edition = "2018"
 name = "palmrs"
 version = "0.1.0-dev.1"
 license = "MIT OR Apache-2.0"
+readme = "crates-io.md"
+
+[features]
+default = [ ]
+
+[dependencies]
+palmrs-database = { path = "./palmrs-database" }
