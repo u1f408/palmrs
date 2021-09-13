@@ -84,6 +84,9 @@
 <span id="84">84</span>
 <span id="85">85</span>
 <span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Individual database record handling</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! This includes the [`DatabaseRecord`] trait, to be implemented by types that represent record</span>
@@ -108,6 +111,9 @@
 
 	<span class="doccomment">/// Return the record&#39;s name, if known</span>
 	<span class="kw">fn</span> <span class="ident">name_str</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>;
+
+	<span class="doccomment">/// Return the record&#39;s attributes, if known</span>
+	<span class="kw">fn</span> <span class="ident">attributes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>;
 
 	<span class="doccomment">/// Return the offset, from the start of the database file, of the record&#39;s data.</span>
 	<span class="kw">fn</span> <span class="ident">data_offset</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span>;
