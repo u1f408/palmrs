@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["RecordIter","Iterator over the records in a database"]],"trait":[["DatabaseRecord","Helper trait for database record types"]]});

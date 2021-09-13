@@ -1,0 +1,316 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `palmrs-database&#x2F;src&#x2F;time.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>time.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../palmrs_database/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<span id="2">  2</span>
+<span id="3">  3</span>
+<span id="4">  4</span>
+<span id="5">  5</span>
+<span id="6">  6</span>
+<span id="7">  7</span>
+<span id="8">  8</span>
+<span id="9">  9</span>
+<span id="10"> 10</span>
+<span id="11"> 11</span>
+<span id="12"> 12</span>
+<span id="13"> 13</span>
+<span id="14"> 14</span>
+<span id="15"> 15</span>
+<span id="16"> 16</span>
+<span id="17"> 17</span>
+<span id="18"> 18</span>
+<span id="19"> 19</span>
+<span id="20"> 20</span>
+<span id="21"> 21</span>
+<span id="22"> 22</span>
+<span id="23"> 23</span>
+<span id="24"> 24</span>
+<span id="25"> 25</span>
+<span id="26"> 26</span>
+<span id="27"> 27</span>
+<span id="28"> 28</span>
+<span id="29"> 29</span>
+<span id="30"> 30</span>
+<span id="31"> 31</span>
+<span id="32"> 32</span>
+<span id="33"> 33</span>
+<span id="34"> 34</span>
+<span id="35"> 35</span>
+<span id="36"> 36</span>
+<span id="37"> 37</span>
+<span id="38"> 38</span>
+<span id="39"> 39</span>
+<span id="40"> 40</span>
+<span id="41"> 41</span>
+<span id="42"> 42</span>
+<span id="43"> 43</span>
+<span id="44"> 44</span>
+<span id="45"> 45</span>
+<span id="46"> 46</span>
+<span id="47"> 47</span>
+<span id="48"> 48</span>
+<span id="49"> 49</span>
+<span id="50"> 50</span>
+<span id="51"> 51</span>
+<span id="52"> 52</span>
+<span id="53"> 53</span>
+<span id="54"> 54</span>
+<span id="55"> 55</span>
+<span id="56"> 56</span>
+<span id="57"> 57</span>
+<span id="58"> 58</span>
+<span id="59"> 59</span>
+<span id="60"> 60</span>
+<span id="61"> 61</span>
+<span id="62"> 62</span>
+<span id="63"> 63</span>
+<span id="64"> 64</span>
+<span id="65"> 65</span>
+<span id="66"> 66</span>
+<span id="67"> 67</span>
+<span id="68"> 68</span>
+<span id="69"> 69</span>
+<span id="70"> 70</span>
+<span id="71"> 71</span>
+<span id="72"> 72</span>
+<span id="73"> 73</span>
+<span id="74"> 74</span>
+<span id="75"> 75</span>
+<span id="76"> 76</span>
+<span id="77"> 77</span>
+<span id="78"> 78</span>
+<span id="79"> 79</span>
+<span id="80"> 80</span>
+<span id="81"> 81</span>
+<span id="82"> 82</span>
+<span id="83"> 83</span>
+<span id="84"> 84</span>
+<span id="85"> 85</span>
+<span id="86"> 86</span>
+<span id="87"> 87</span>
+<span id="88"> 88</span>
+<span id="89"> 89</span>
+<span id="90"> 90</span>
+<span id="91"> 91</span>
+<span id="92"> 92</span>
+<span id="93"> 93</span>
+<span id="94"> 94</span>
+<span id="95"> 95</span>
+<span id="96"> 96</span>
+<span id="97"> 97</span>
+<span id="98"> 98</span>
+<span id="99"> 99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+</pre><pre class="rust"><code><span class="doccomment">//! `PalmTimestamp` type &amp; conversion methods</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Palm OS has two epochs used for storing time - the &quot;old Palm epoch&quot; (seconds since 1904-01-01</span>
+<span class="doccomment">//! 00:00:00), and the standard UNIX epoch (seconds since 1970-01-01 00:00:00). If the &quot;old Palm</span>
+<span class="doccomment">//! epoch&quot; is used for storing the time, it is stored as an _unsigned_ 32-bit integer, but if the</span>
+<span class="doccomment">//! UNIX epoch is used, it is stored as a _signed_ 32-bit integer.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! This module provides the [`PalmTimestamp`] helper type, which can be used within larger data</span>
+<span class="doccomment">//! structures to provide automatic timestamp format conversion. This module also provides various</span>
+<span class="doccomment">//! helper methods for timestamp format detection, and conversion between the timestamp formats.</span>
+
+<span class="kw">use</span> <span class="ident">core</span>::{
+	<span class="ident">convert::TryFrom</span>,
+	<span class="ident">fmt</span>::{<span class="self">self</span>, <span class="ident">Debug</span>, <span class="ident">Display</span>},
+};
+
+<span class="kw">use</span> <span class="ident">chrono</span>::{<span class="ident">TimeZone</span>, <span class="ident">Utc</span>};
+
+<span class="doccomment">/// The number of seconds between the two Palm OS timestamp epochs.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Adding this constant to an &quot;old Palm epoch&quot; timestamp will give you a UNIX epoch timestamp.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The value of this constant differs from the value used in some other Palm OS utilities</span>
+<span class="doccomment">/// (specifically, [palmdump](https://www.fourmilab.ch/palm/palmdump)). I am not entirely sure why</span>
+<span class="doccomment">/// palmdump uses the value it does. For clarification&#39;s sake, here is how the value provided here</span>
+<span class="doccomment">/// was calculated (as a Python 3 snippet):</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```python</span>
+<span class="doccomment">/// from datetime import datetime</span>
+<span class="doccomment">/// print(&quot;%d&quot; % abs(datetime.timestamp(datetime(1904, 1, 1))))</span>
+<span class="doccomment">/// ```</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SECONDS_BETWEEN_PALM_EPOCHS</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">2082886200</span>;
+
+<span class="doccomment">/// Type representing a Palm OS timestamp</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The raw data contained within this struct can be _either_ of the Palm OS timestamp formats</span>
+<span class="doccomment">/// (seconds since the UNIX epoch, or seconds since the &quot;old Palm epoch,&quot; see the module</span>
+<span class="doccomment">/// documentation for more info), so that this type can be embedded directly within raw data</span>
+<span class="doccomment">/// structures.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// To get a usable timestamp from this type, the [`as_unix_ts`][PalmTimestamp::as_unix_ts] method</span>
+<span class="doccomment">/// can be called to return the number of seconds since the Unix epoch.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>, <span class="ident">packed</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PalmTimestamp</span>(<span class="kw">pub</span> <span class="ident">u32</span>);
+
+<span class="kw">impl</span> <span class="ident">PalmTimestamp</span> {
+	<span class="doccomment">/// Return the timestamp as the seconds since the UNIX epoch</span>
+	<span class="doccomment">///</span>
+	<span class="doccomment">/// If the containing type contains an &quot;old Palm epoch&quot; timestamp, as may be the case if the</span>
+	<span class="doccomment">/// timestamp was loaded from a PRC/PDB file, this method will perform an implicit conversion</span>
+	<span class="doccomment">/// to the UNIX epoch.</span>
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_unix_ts</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">i32</span> {
+		<span class="kw">if</span> <span class="ident">is_palm_epoch</span>(<span class="self">self</span>.<span class="number">0</span>) {
+			<span class="kw">return</span> <span class="ident">palm_ts_to_unix_ts</span>(<span class="self">self</span>.<span class="number">0</span>);
+		}
+
+		<span class="self">self</span>.<span class="number">0</span> <span class="kw">as</span> <span class="ident">i32</span>
+	}
+
+	<span class="doccomment">/// Return the timestamp as a `strftime`-formatted string</span>
+	<span class="doccomment">///</span>
+	<span class="doccomment">/// This uses the formatting specifiers from [`chrono::format::strftime`].</span>
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">strftime</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">format</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+		<span class="kw">let</span> <span class="ident">datetime</span> <span class="op">=</span> <span class="ident">Utc</span>.<span class="ident">timestamp</span>(<span class="self">self</span>.<span class="ident">as_unix_ts</span>() <span class="kw">as</span> <span class="ident">i64</span>, <span class="number">0</span>);
+		<span class="ident">datetime</span>.<span class="ident">format</span>(<span class="ident">format</span>).<span class="ident">to_string</span>()
+	}
+}
+
+<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">PalmTimestamp</span> {
+	<span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+		<span class="comment">// 1970-01-01 00:00:00 as a UNIX epoch timestamp</span>
+		<span class="self">Self</span>(<span class="number">0u32</span>)
+	}
+}
+
+<span class="kw">impl</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">PalmTimestamp</span> {
+	<span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt::Result</span> {
+		<span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;PalmTimestamp({})&quot;</span>, <span class="self">self</span>.<span class="ident">as_unix_ts</span>())
+	}
+}
+
+<span class="doccomment">/// Check if the given timestamp is using the &quot;old Palm epoch&quot;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This uses the incredibly simple heuristic of &quot;is the top bit set?&quot; -- this works because the</span>
+<span class="doccomment">/// top bit will always be clear if we&#39;re dealing with a signed integer (which is the case if the</span>
+<span class="doccomment">/// timestamp is using the UNIX epoch), and if the timestamp is using the old Palm epoch, the top</span>
+<span class="doccomment">/// bit will always be set if the timestamp is a date occurring after some time in 1972.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Palm OS definitely wasn&#39;t around in 1972, making a Palm database containing a timestamp around</span>
+<span class="doccomment">/// this time period extremely unlikely to occur naturally (I mean, bit flipping could happen?), so</span>
+<span class="doccomment">/// this is a good enough measure of what timestamp format we&#39;re using.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is the same heuristic that [palmdump](https://www.fourmilab.ch/palm/palmdump), and many</span>
+<span class="doccomment">/// other Palm OS utilites, use for determining the timestamp format.</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_palm_epoch</span>(<span class="ident">timestamp</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+	<span class="ident">timestamp</span> <span class="op">&amp;</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">31</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span>
+}
+
+<span class="doccomment">/// Convert an &quot;old Palm epoch&quot; timestamp to a UNIX epoch timestamp</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">palm_ts_to_unix_ts</span>(<span class="ident">timestamp</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">i32</span> {
+	<span class="ident">i32::try_from</span>(<span class="ident">timestamp</span>.<span class="ident">wrapping_sub</span>(<span class="ident">SECONDS_BETWEEN_PALM_EPOCHS</span>))
+		.<span class="ident">expect</span>(<span class="string">&quot;integer overflow during timestamp conversion&quot;</span>)
+}
+
+<span class="doccomment">/// Convert a UNIX epoch timestamp to an &quot;old Palm epoch&quot; timestamp</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">unix_ts_to_palm_ts</span>(<span class="ident">timestamp</span>: <span class="ident">i32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
+	(<span class="ident">timestamp</span> <span class="kw">as</span> <span class="ident">u32</span>).<span class="ident">wrapping_add</span>(<span class="ident">SECONDS_BETWEEN_PALM_EPOCHS</span>)
+}
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="kw">mod</span> <span class="ident">tests</span> {
+	<span class="kw">use</span> <span class="ident">test_env_log::test</span>;
+
+	<span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+
+	<span class="attribute">#[<span class="ident">test</span>]</span>
+	<span class="kw">fn</span> <span class="ident">is_palm_epoch_detects_unix</span>() {
+		<span class="macro">assert_eq!</span>(<span class="ident">is_palm_epoch</span>(<span class="number">0</span>), <span class="bool-val">false</span>);
+		<span class="macro">assert_eq!</span>(<span class="ident">is_palm_epoch</span>(<span class="number">0x613f3997</span>), <span class="bool-val">false</span>);
+	}
+
+	<span class="attribute">#[<span class="ident">test</span>]</span>
+	<span class="kw">fn</span> <span class="ident">is_palm_epoch_detects_palm</span>() {
+		<span class="macro">assert_eq!</span>(<span class="ident">is_palm_epoch</span>(<span class="number">0xb85898b0</span>), <span class="bool-val">true</span>);
+		<span class="macro">assert_eq!</span>(<span class="ident">is_palm_epoch</span>(<span class="number">0xdd64ea17</span>), <span class="bool-val">true</span>);
+	}
+
+	<span class="attribute">#[<span class="ident">test</span>]</span>
+	<span class="kw">fn</span> <span class="ident">unix_to_palm_to_unix</span>() {
+		<span class="macro">assert_eq!</span>(
+			<span class="number">1009969200</span>,
+			<span class="ident">palm_ts_to_unix_ts</span>(<span class="ident">unix_ts_to_palm_ts</span>(<span class="number">1009969200</span>))
+		);
+	}
+
+	<span class="attribute">#[<span class="ident">test</span>]</span>
+	<span class="kw">fn</span> <span class="ident">palm_to_unix_to_palm</span>() {
+		<span class="macro">assert_eq!</span>(
+			<span class="number">3092855400</span>,
+			<span class="ident">unix_ts_to_palm_ts</span>(<span class="ident">palm_ts_to_unix_ts</span>(<span class="number">3092855400</span>))
+		);
+	}
+
+	<span class="attribute">#[<span class="ident">test</span>]</span>
+	<span class="kw">fn</span> <span class="ident">palmtimestamp_decodes_palm_epoch</span>() {
+		<span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">PalmTimestamp</span>(<span class="number">3092855400</span>);
+		<span class="macro">assert_eq!</span>(<span class="ident">ts</span>.<span class="ident">as_unix_ts</span>(), <span class="number">1009969200</span>);
+	}
+
+	<span class="attribute">#[<span class="ident">test</span>]</span>
+	<span class="kw">fn</span> <span class="ident">palmtimestamp_passthru_unix_epoch</span>() {
+		<span class="kw">let</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">PalmTimestamp</span>(<span class="number">1009969200</span>);
+		<span class="macro">assert_eq!</span>(<span class="ident">ts</span>.<span class="ident">as_unix_ts</span>(), <span class="number">1009969200</span>);
+	}
+}
+</code></pre></div>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="palmrs_database" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
+    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
+</body></html>
