@@ -3,9 +3,11 @@ use std::path::PathBuf;
 use palmrs::database::{
 	format_prc::PrcDatabase,
 	header::DatabaseHeader,
+	record::DatabaseRecord,
 	DatabaseFormat,
 	PalmDatabase,
 };
+use pretty_hex::{config_hex, HexConfig};
 use stable_eyre::eyre::{eyre, Report, WrapErr};
 use structopt::StructOpt;
 
@@ -58,13 +60,55 @@ fn perform_dump_header(header: &DatabaseHeader) -> Result<(), Report> {
 	Ok(())
 }
 
+fn perform_dump_record<T: DatabaseRecord>(
+	idx: usize,
+	record: T,
+	data: &[u8],
+	opt: &Opt,
+) -> Result<(), Report> {
+	let (data_offset, data_len) = (
+		record.data_offset() as usize,
+		record.data_len().map(|x| x as usize).unwrap_or(0usize),
+	);
+
+	println!(
+		"Record {:#X}: name={:?} offset={:#X} length={:#X}",
+		idx,
+		record.name_str().unwrap_or(""),
+		data_offset,
+		data_len,
+	);
+
+	if opt.hexdump_records {
+		let record_data = &data[data_offset..(data_offset + data_len)];
+		println!(
+			"{}",
+			config_hex(
+				&record_data,
+				HexConfig {
+					title: false,
+					..HexConfig::default()
+				},
+			)
+		);
+	}
+
+	Ok(())
+}
+
 fn perform_dump<T: DatabaseFormat>(data: &[u8], opt: &Opt) -> Result<(), Report> {
 	let database = PalmDatabase::<T>::from_bytes(&data)
 		.wrap_err_with(|| format!("Failed to initialize PalmDatabase for {:?}", &opt.filename))?;
 
+	// Dump header
 	log::trace!("database.header = {:#?}", &database.header);
-
 	perform_dump_header(&database.header)?;
+
+	// Dump each record
+	for (idx, record) in (0..).zip(database.iter_records()) {
+		println!();
+		perform_dump_record(idx, record, &database.data, &opt)?;
+	}
 
 	Ok(())
 }
