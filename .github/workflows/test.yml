@@ -1,0 +1,26 @@
+name: "Test"
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  test_default_features:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ATiltedTree/setup-rust@v1
+        with:
+          rust-version: nightly
+
+      - run: cargo test --all
+  
+  test_all_features:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ATiltedTree/setup-rust@v1
+        with:
+          rust-version: nightly
+
+      - run: cargo test --all --features=all
