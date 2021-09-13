@@ -11,6 +11,7 @@
 <span id="11">11</span>
 <span id="12">12</span>
 <span id="13">13</span>
+<span id="14">14</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Support for reading, and eventually writing, the Palm OS database formats (PRC and PDB)</span>
 
 <span class="kw">mod</span> <span class="ident">format</span>;
@@ -22,6 +23,7 @@
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::{
 	<span class="ident">format</span>::{<span class="ident">DatabaseFormat</span>, <span class="ident">PalmDatabase</span>},
+	<span class="ident">format_pdb::PdbDatabase</span>,
 	<span class="ident">format_prc::PrcDatabase</span>,
 };
 </code></pre></div>
