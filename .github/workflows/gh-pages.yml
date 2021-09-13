@@ -19,7 +19,7 @@ jobs:
           rust-version: nightly
 
       - name: Build documentation
-        run: cargo doc -Zunstable-options --workspace --no-deps --enable-index-page
+        run: env RUSTDOCFLAGS="-Z unstable-options --enable-index-page" cargo doc --workspace --no-deps
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
