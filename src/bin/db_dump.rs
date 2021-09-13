@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use palmrs::database::{
+	format_pdb::PdbDatabase,
 	format_prc::PrcDatabase,
 	header::DatabaseHeader,
 	record::DatabaseRecord,
@@ -134,7 +135,7 @@ fn main() -> Result<(), Report> {
 
 	let db_type = match extension.as_str() {
 		"prc" => "prc",
-		"pdb" | "mobi" => return Err(eyre!("PDB support is currently unimplemented, sorry!")),
+		"pdb" | "mobi" => "pdb",
 		ext => return Err(eyre!("Unknown database format: {:?}", ext)),
 	};
 
@@ -148,6 +149,7 @@ fn main() -> Result<(), Report> {
 	);
 	match db_type {
 		"prc" => perform_dump::<PrcDatabase>(&content[..], &opt),
+		"pdb" => perform_dump::<PdbDatabase>(&content[..], &opt),
 		_ => unreachable!(),
 	}
 }
