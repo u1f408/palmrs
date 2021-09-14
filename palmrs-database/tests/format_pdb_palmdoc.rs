@@ -1,7 +1,7 @@
 use palmrs_database::{header::DatabaseHeader, record::DatabaseRecord, PalmDatabase, PdbDatabase};
 use test_env_log::test;
 
-const EXAMPLE_PDB: &'static [u8] = include_bytes!("data/tWmanual.pdb");
+const EXAMPLE_PDB: &'static [u8] = include_bytes!("../../test-data/tWmanual.pdb");
 
 #[test]
 fn read_header() {
@@ -14,6 +14,9 @@ fn read_header() {
 #[test]
 fn read_database_full() {
 	let database = PalmDatabase::<PdbDatabase>::from_bytes(&EXAMPLE_PDB).unwrap();
+
+	// TODO: get "app info" section
+	// TODO: get "sort info" section
 
 	// Test record iteration
 	for (_idx, (rec_hdr, rec_data)) in (0..).zip(database.records.iter()) {

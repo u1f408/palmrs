@@ -1,7 +1,7 @@
 use palmrs_database::{header::DatabaseHeader, record::DatabaseRecord, PalmDatabase, PrcDatabase};
 use test_env_log::test;
 
-const EXAMPLE_PRC: &'static [u8] = include_bytes!("data/hello.prc");
+const EXAMPLE_PRC: &'static [u8] = include_bytes!("../../test-data/hello-v1.prc");
 
 #[test]
 fn read_header() {
