@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["CATEGORY_ATTRIBUTE_MASK","Item record category bitmask"]],"struct":[["AppInfoCategories",""],["ExtraInfoCategory","Representation of an item category"]]});

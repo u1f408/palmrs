@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["category","Item category record helpers"]],"struct":[["NullExtraInfo","Null implementation of [`ExtraInfoRecord`]"]],"trait":[["ExtraInfoRecord","Helper trait for decoding & encoding “extra data” records (app info / sort info)"]]});

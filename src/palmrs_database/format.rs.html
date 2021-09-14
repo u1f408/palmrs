@@ -116,6 +116,32 @@
 <span id="116">116</span>
 <span id="117">117</span>
 <span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Database format helpers</span>
 
 <span class="kw">use</span> <span class="ident">core</span>::{
@@ -126,6 +152,7 @@
 
 <span class="kw">use</span> <span class="kw">crate</span>::{
 	<span class="ident">header</span>::{<span class="ident">DatabaseHeader</span>, <span class="ident">DATABASE_HEADER_LENGTH</span>},
+	<span class="ident">info</span>::{<span class="ident">category::AppInfoCategories</span>, <span class="ident">ExtraInfoRecord</span>, <span class="ident">NullExtraInfo</span>},
 	<span class="ident">record</span>::{<span class="ident">pdb_record::PdbRecordHeader</span>, <span class="ident">DatabaseRecord</span>},
 };
 
@@ -133,6 +160,9 @@
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">DatabaseFormat</span> {
 	<span class="doccomment">/// The record header type for this database format</span>
 	<span class="kw">type</span> <span class="ident">RecordHeader</span>: <span class="ident">DatabaseRecord</span>;
+
+	<span class="doccomment">/// The type of the app info record</span>
+	<span class="kw">type</span> <span class="ident">AppInfoRecord</span>: <span class="ident">ExtraInfoRecord</span>;
 
 	<span class="doccomment">/// Returns whether the database is valid as this database format</span>
 	<span class="kw">fn</span> <span class="ident">is_valid</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">header</span>: <span class="kw-2">&amp;</span><span class="ident">DatabaseHeader</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span>;
@@ -142,6 +172,7 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PrcDatabase</span>;
 <span class="kw">impl</span> <span class="ident">DatabaseFormat</span> <span class="kw">for</span> <span class="ident">PrcDatabase</span> {
 	<span class="kw">type</span> <span class="ident">RecordHeader</span> <span class="op">=</span> <span class="ident">PdbRecordHeader</span>;
+	<span class="kw">type</span> <span class="ident">AppInfoRecord</span> <span class="op">=</span> <span class="ident">NullExtraInfo</span>;
 
 	<span class="kw">fn</span> <span class="ident">is_valid</span>(<span class="ident">_data</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">header</span>: <span class="kw-2">&amp;</span><span class="ident">DatabaseHeader</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
 		<span class="kw">if</span> <span class="ident">header</span>.<span class="ident">attributes</span> <span class="op">&amp;</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>) <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
@@ -156,6 +187,22 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PdbDatabase</span>;
 <span class="kw">impl</span> <span class="ident">DatabaseFormat</span> <span class="kw">for</span> <span class="ident">PdbDatabase</span> {
 	<span class="kw">type</span> <span class="ident">RecordHeader</span> <span class="op">=</span> <span class="ident">PdbRecordHeader</span>;
+	<span class="kw">type</span> <span class="ident">AppInfoRecord</span> <span class="op">=</span> <span class="ident">NullExtraInfo</span>;
+
+	<span class="kw">fn</span> <span class="ident">is_valid</span>(<span class="ident">_data</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">header</span>: <span class="kw-2">&amp;</span><span class="ident">DatabaseHeader</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+		<span class="kw">if</span> <span class="ident">header</span>.<span class="ident">attributes</span> <span class="op">&amp;</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
+			<span class="kw">return</span> <span class="bool-val">false</span>;
+		}
+
+		<span class="bool-val">true</span>
+	}
+}
+
+<span class="doccomment">/// Implementation of [`DatabaseFormat`] for PDB databases that contain category information</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PdbWithCategoriesDatabase</span>;
+<span class="kw">impl</span> <span class="ident">DatabaseFormat</span> <span class="kw">for</span> <span class="ident">PdbWithCategoriesDatabase</span> {
+	<span class="kw">type</span> <span class="ident">RecordHeader</span> <span class="op">=</span> <span class="ident">PdbRecordHeader</span>;
+	<span class="kw">type</span> <span class="ident">AppInfoRecord</span> <span class="op">=</span> <span class="ident">AppInfoCategories</span>;
 
 	<span class="kw">fn</span> <span class="ident">is_valid</span>(<span class="ident">_data</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">header</span>: <span class="kw-2">&amp;</span><span class="ident">DatabaseHeader</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
 		<span class="kw">if</span> <span class="ident">header</span>.<span class="ident">attributes</span> <span class="op">&amp;</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
@@ -173,6 +220,7 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PalmDatabase</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">DatabaseFormat</span><span class="op">&gt;</span> {
 	<span class="kw">pub</span> <span class="ident">header</span>: <span class="ident">DatabaseHeader</span>,
+	<span class="kw">pub</span> <span class="ident">app_info</span>: <span class="ident">T::AppInfoRecord</span>,
 	<span class="kw">pub</span> <span class="ident">records</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">T::RecordHeader</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>)<span class="op">&gt;</span>,
 	<span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>],
 	<span class="ident">_marker</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
@@ -188,6 +236,8 @@
 				<span class="string">&quot;database is not valid&quot;</span>,
 			));
 		}
+
+		<span class="kw">let</span> <span class="ident">app_info</span> <span class="op">=</span> <span class="ident">T::AppInfoRecord::from_bytes</span>(<span class="kw-2">&amp;</span><span class="ident">header</span>, <span class="kw-2">&amp;</span><span class="ident">data</span>, <span class="ident">header</span>.<span class="ident">app_info_id</span> <span class="kw">as</span> <span class="ident">usize</span>)<span class="question-mark">?</span>;
 
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rec_offset</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="ident">DATABASE_HEADER_LENGTH</span>;
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">records</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">T::RecordHeader</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
@@ -207,6 +257,7 @@
 
 		<span class="prelude-val">Ok</span>(<span class="self">Self</span> {
 			<span class="ident">header</span>,
+			<span class="ident">app_info</span>,
 			<span class="ident">records</span>,
 			<span class="ident">data</span>,
 			<span class="ident">_marker</span>: <span class="ident">PhantomData</span>,
@@ -219,6 +270,7 @@
 		<span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;PalmDatabase&quot;</span>)
 			.<span class="ident">field</span>(<span class="string">&quot;type&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">std::any::type_name</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>())
 			.<span class="ident">field</span>(<span class="string">&quot;header&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">header</span>)
+			.<span class="ident">field</span>(<span class="string">&quot;app_info&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">app_info</span>)
 			.<span class="ident">field</span>(<span class="string">&quot;records&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">records</span>)
 			.<span class="ident">finish</span>()
 	}
