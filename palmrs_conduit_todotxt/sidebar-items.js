@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["device_database_parse","Parse tasks out of a `ToDoDB` database"],["main","Main entrypoint"],["palm_to_todotxt","Perform a one-way conversion from the Palm OS `ToDoDB` to the `todo.txt` format"]],"struct":[["ToDoTask","A single to-do task"]]});

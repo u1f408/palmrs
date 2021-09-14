@@ -45,6 +45,12 @@
 <span id="45">45</span>
 <span id="46">46</span>
 <span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Support for Palm HotSync, with pluggable sync conduits</span>
 
 <span class="kw">use</span> <span class="ident">core</span>::{
@@ -56,10 +62,16 @@
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">conduit</span>;
 
+<span class="doccomment">/// Sync mode</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">SyncMode</span> {
+	<span class="doccomment">/// Prefer the data from local storage</span>
 	<span class="ident">KeepLocal</span>,
+
+	<span class="doccomment">/// Prefer the data from the remote Palm OS device</span>
 	<span class="ident">KeepDevice</span>,
+
+	<span class="doccomment">/// Perform a merge of the local and remote datasets</span>
 	<span class="ident">Merge</span>,
 }
 

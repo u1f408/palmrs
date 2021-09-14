@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["palmrs","palmrs_database","palmrs_sync"];
+window.ALL_CRATES = ["palmrs","palmrs_conduit_todotxt","palmrs_database","palmrs_sync"];

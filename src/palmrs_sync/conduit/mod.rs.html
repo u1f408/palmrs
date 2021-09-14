@@ -173,6 +173,40 @@
 <span id="173">173</span>
 <span id="174">174</span>
 <span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Sync conduit handling</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Conduit specification</span>
@@ -238,7 +272,11 @@
 <span class="doccomment">//! to that directory) will be synced back to the device. When the conduit is operating in</span>
 <span class="doccomment">//! `keep-device` mode, the conduit _MAY NOT_ make changes to the databases in that directory.</span>
 
-<span class="kw">use</span> <span class="ident">core</span>::{<span class="ident">cmp::PartialEq</span>, <span class="ident">fmt::Debug</span>};
+<span class="kw">use</span> <span class="ident">core</span>::{
+	<span class="ident">cmp::PartialEq</span>,
+	<span class="ident">default::Default</span>,
+	<span class="ident">fmt</span>::{<span class="self">self</span>, <span class="ident">Debug</span>, <span class="ident">Display</span>},
+};
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">collections::HashMap</span>, <span class="ident">env</span>, <span class="ident">ffi::OsString</span>, <span class="ident">path::PathBuf</span>};
 
 <span class="kw">use</span> <span class="ident">subprocess</span>::{<span class="self">self</span>, <span class="ident">Popen</span>, <span class="ident">PopenConfig</span>, <span class="ident">Redirection</span>};
@@ -247,6 +285,36 @@
 
 <span class="kw">mod</span> <span class="ident">within</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="self">self</span>::within</span>::{<span class="ident">WithinConduit</span>, <span class="ident">WithinConduitConfig</span>};
+
+<span class="doccomment">/// Container (with builder API) for sync conduit requirements</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Default</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ConduitRequirements</span> {
+	<span class="kw">pub</span> <span class="ident">databases</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">ConduitRequirements</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+		<span class="ident">Default::default</span>()
+	}
+
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_databases</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">databases</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+		<span class="self">self</span>.<span class="ident">databases</span> <span class="op">=</span> <span class="ident">databases</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">String::from</span>(<span class="kw-2">*</span><span class="ident">x</span>)).<span class="ident">collect</span>();
+		<span class="self">self</span>
+	}
+
+	<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_mut</span>)]</span>
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">finish</span>(<span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+		<span class="self">self</span>
+	}
+}
+
+<span class="kw">impl</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">ConduitRequirements</span> {
+	<span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt::Result</span> {
+		<span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;[conduit-requirements]&quot;</span>)<span class="question-mark">?</span>;
+		<span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;databases = {:?}&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">databases</span>)<span class="question-mark">?</span>;
+		<span class="prelude-val">Ok</span>(())
+	}
+}
 
 <span class="doccomment">/// Conduit call handler</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>

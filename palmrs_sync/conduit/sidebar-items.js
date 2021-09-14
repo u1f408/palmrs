@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["ConduitHandler","Conduit call handler"],["WithinConduit",""],["WithinConduitConfig",""]]});
+initSidebarItems({"struct":[["ConduitHandler","Conduit call handler"],["ConduitRequirements","Container (with builder API) for sync conduit requirements"],["WithinConduit",""],["WithinConduitConfig",""]]});

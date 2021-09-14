@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["SyncMode",""]],"mod":[["conduit","Sync conduit handling"]]});
+initSidebarItems({"enum":[["SyncMode","Sync mode"]],"mod":[["conduit","Sync conduit handling"]]});
