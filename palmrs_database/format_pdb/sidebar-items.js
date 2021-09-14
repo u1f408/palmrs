@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["PdbDatabase","Implementation of [`DatabaseFormat`] for PDB databases"],["PdbRecordHeader","A PDB record header"]]});

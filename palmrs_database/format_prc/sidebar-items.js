@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["PrcDatabase","Implementation of [`DatabaseFormat`] for PRC databases"],["PrcRecordHeader","A PRC record header"]]});
