@@ -256,9 +256,11 @@ dependencies = [
  "env_logger",
  "log",
  "palmrs-database",
+ "palmrs-sync",
  "pretty-hex",
  "stable-eyre",
  "structopt",
+ "subprocess",
 ]
 
 [[package]]
@@ -268,6 +270,16 @@ dependencies = [
  "byteorder",
  "chrono",
  "env_logger",
+ "test-env-log",
+]
+
+[[package]]
+name = "palmrs-sync"
+version = "0.1.0-dev.1"
+dependencies = [
+ "env_logger",
+ "palmrs-database",
+ "subprocess",
  "test-env-log",
 ]
 
@@ -381,6 +393,16 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "subprocess"
+version = "0.2.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "334b801f9ca2529ba9605109f1d2835f15aff94cd6cfe5afe6ce8cf71e5fd3c4"
+dependencies = [
+ "libc",
+ "winapi",
 ]
 
 [[package]]

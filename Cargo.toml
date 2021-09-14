@@ -14,19 +14,37 @@ readme = "crates-io.md"
 [features]
 cli-debug = [ ]
 cli-all = [ "cli-debug" ]
-all = [ "cli-all" ]
-default = [ ]
+cli-default = [ ]
+sync-todotxt = [ ]
+sync-all = [ ]
+sync-default = [ "sync-todotxt" ]
+all = [ "cli-all", "sync-all" ]
+default = [ "cli-default", "sync-default" ]
 
 [dependencies]
 palmrs-database = { path = "./palmrs-database" }
+palmrs-sync = { path = "./palmrs-sync" }
 stable-eyre = { version = "0.2" }
 log = { version = "0.4" }
 env_logger = { version = "0.9" }
 structopt = { version = "0.3" }
 pretty-hex = { version = "0.2" }
+subprocess = { version = "0.2" }
 
 [[bin]]
 name = "palmrs-db-dump"
 required-features = [ "cli-debug" ]
 path = "src/bin/db_dump.rs"
+doc = false
+
+[[bin]]
+name = "palmrs-sync-dbgconduit"
+required-features = [ "cli-debug" ]
+path = "src/bin/sync_dbgconduit.rs"
+doc = false
+
+[[bin]]
+name = "palmrs-conduit-todotxt"
+required-features = [ "sync-todotxt" ]
+path = "src/bin/conduit_todotxt.rs"
 doc = false
