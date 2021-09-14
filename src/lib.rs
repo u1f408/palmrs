@@ -13,3 +13,4 @@
 //! documentation; and the issue tracker, see <https://github.com/u1f408/palmrs>.
 
 pub use palmrs_database as database;
+pub use palmrs_sync as sync;

@@ -63,7 +63,11 @@
 //! to that directory) will be synced back to the device. When the conduit is operating in
 //! `keep-device` mode, the conduit _MAY NOT_ make changes to the databases in that directory.
 
-use core::{cmp::PartialEq, fmt::Debug};
+use core::{
+	cmp::PartialEq,
+	default::Default,
+	fmt::{self, Debug, Display},
+};
 use std::{collections::HashMap, env, ffi::OsString, path::PathBuf};
 
 use subprocess::{self, Popen, PopenConfig, Redirection};
@@ -72,6 +76,36 @@ use crate::SyncMode;
 
 mod within;
 pub use self::within::{WithinConduit, WithinConduitConfig};
+
+/// Container (with builder API) for sync conduit requirements
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct ConduitRequirements {
+	pub databases: Vec<String>,
+}
+
+impl ConduitRequirements {
+	pub fn new() -> Self {
+		Default::default()
+	}
+
+	pub fn with_databases(mut self, databases: &[&str]) -> Self {
+		self.databases = databases.into_iter().map(|x| String::from(*x)).collect();
+		self
+	}
+
+	#[allow(unused_mut)]
+	pub fn finish(mut self) -> Self {
+		self
+	}
+}
+
+impl Display for ConduitRequirements {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		writeln!(f, "[conduit-requirements]")?;
+		writeln!(f, "databases = {:?}", &self.databases)?;
+		Ok(())
+	}
+}
 
 /// Conduit call handler
 #[derive(Debug, Clone, PartialEq)]

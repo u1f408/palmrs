@@ -9,10 +9,16 @@ use core::{
 
 pub mod conduit;
 
+/// Sync mode
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum SyncMode {
+	/// Prefer the data from local storage
 	KeepLocal,
+
+	/// Prefer the data from the remote Palm OS device
 	KeepDevice,
+
+	/// Perform a merge of the local and remote datasets
 	Merge,
 }
 
