@@ -1,9 +1,4 @@
-use palmrs_database::{
-	format_pdb::{PdbDatabase, PdbRecordHeader},
-	header::DatabaseHeader,
-	record::{DatabaseRecord, RecordIter},
-	PalmDatabase,
-};
+use palmrs_database::{header::DatabaseHeader, record::DatabaseRecord, PalmDatabase, PdbDatabase};
 use test_env_log::test;
 
 const EXAMPLE_PDB: &'static [u8] = include_bytes!("data/tWmanual.pdb");
@@ -17,29 +12,12 @@ fn read_header() {
 }
 
 #[test]
-fn iterate_records() {
-	let iterator = RecordIter::<PdbRecordHeader>::from_bytes(&EXAMPLE_PDB).unwrap();
-	for record in iterator {
-		assert!(record.data_offset() > 0);
-		assert!(record.data_len().is_some());
-	}
-}
-
-#[test]
 fn read_database_full() {
 	let database = PalmDatabase::<PdbDatabase>::from_bytes(&EXAMPLE_PDB).unwrap();
-	eprintln!("{}", &database);
 
 	// Test record iteration
-	for record in database.iter_records() {
-		// Get a slice of the record content
-		let (data_offset, data_len) = (
-			record.data_offset() as usize,
-			record.data_len().unwrap() as usize,
-		);
-		let record_data = &database.data[data_offset..(data_offset + data_len)];
-		assert!(record_data.len() > 0);
-
-		eprintln!("{} - {:?}", &record, record_data);
+	for (_idx, (rec_hdr, rec_data)) in (0..).zip(database.records.iter()) {
+		assert_eq!(rec_data.len(), rec_hdr.data_len().unwrap_or(0) as usize);
+		assert!(rec_hdr.attributes().unwrap_or(0) & 0x40 != 0);
 	}
 }

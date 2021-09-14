@@ -1,12 +1,12 @@
 use std::path::PathBuf;
 
 use palmrs::database::{
-	format_pdb::PdbDatabase,
-	format_prc::PrcDatabase,
 	header::DatabaseHeader,
 	record::DatabaseRecord,
 	DatabaseFormat,
 	PalmDatabase,
+	PdbDatabase,
+	PrcDatabase,
 };
 use pretty_hex::{config_hex, HexConfig};
 use stable_eyre::eyre::{eyre, Report, WrapErr};
@@ -61,36 +61,30 @@ fn perform_dump_header(header: &DatabaseHeader) -> Result<(), Report> {
 	Ok(())
 }
 
-fn perform_dump_record<T: DatabaseRecord>(
-	idx: usize,
-	record: T,
-	data: &[u8],
-	opt: &Opt,
-) -> Result<(), Report> {
-	log::trace!("records[{}] = {:#?}", idx, &record);
+fn perform_dump_record<T>(idx: usize, rec_hdr: T, rec_data: &[u8], opt: &Opt) -> Result<(), Report>
+where
+	T: DatabaseRecord,
+{
+	log::trace!("records[{}] = {:#?}", idx, &rec_hdr);
 
-	let (data_offset, data_len) = (
-		record.data_offset() as usize,
-		record.data_len().map(|x| x as usize).unwrap_or(0usize),
-	);
-
-	let attributes = record.attributes().unwrap_or(0);
+	let data_offset = rec_hdr.data_offset() as usize;
+	let data_len = rec_hdr.data_len().map(|x| x as usize).unwrap_or(0usize);
+	let attributes = rec_hdr.attributes().unwrap_or(0);
 
 	println!(
 		"Record {}: name={:?} offset={:#X} length={:#X} attributes={:#X}",
 		idx,
-		record.name_str().unwrap_or(""),
+		rec_hdr.name_str().unwrap_or(""),
 		data_offset,
 		data_len,
 		attributes,
 	);
 
 	if opt.hexdump_records {
-		let record_data = &data[data_offset..(data_offset + data_len)];
 		println!(
 			"{}",
 			config_hex(
-				&record_data,
+				&rec_data,
 				HexConfig {
 					title: false,
 					..HexConfig::default()
@@ -111,9 +105,9 @@ fn perform_dump<T: DatabaseFormat>(data: &[u8], opt: &Opt) -> Result<(), Report>
 	perform_dump_header(&database.header)?;
 
 	// Dump each record
-	for (idx, record) in (0..).zip(database.iter_records()) {
+	for (idx, (rec_hdr, rec_data)) in (0..).zip(database.records.into_iter()) {
 		println!();
-		perform_dump_record(idx, record, &database.data, &opt)?;
+		perform_dump_record(idx, rec_hdr, &rec_data, &opt)?;
 	}
 
 	Ok(())
@@ -147,6 +141,7 @@ fn main() -> Result<(), Report> {
 		&db_type,
 		&opt.filename
 	);
+
 	match db_type {
 		"prc" => perform_dump::<PrcDatabase>(&content[..], &opt),
 		"pdb" => perform_dump::<PdbDatabase>(&content[..], &opt),
