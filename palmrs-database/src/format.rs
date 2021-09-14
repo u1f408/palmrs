@@ -8,6 +8,7 @@ use std::io;
 
 use crate::{
 	header::{DatabaseHeader, DATABASE_HEADER_LENGTH},
+	info::{category::AppInfoCategories, ExtraInfoRecord, NullExtraInfo},
 	record::{pdb_record::PdbRecordHeader, DatabaseRecord},
 };
 
@@ -15,6 +16,9 @@ use crate::{
 pub trait DatabaseFormat {
 	/// The record header type for this database format
 	type RecordHeader: DatabaseRecord;
+
+	/// The type of the app info record
+	type AppInfoRecord: ExtraInfoRecord;
 
 	/// Returns whether the database is valid as this database format
 	fn is_valid(data: &[u8], header: &DatabaseHeader) -> bool;
@@ -24,6 +28,7 @@ pub trait DatabaseFormat {
 pub struct PrcDatabase;
 impl DatabaseFormat for PrcDatabase {
 	type RecordHeader = PdbRecordHeader;
+	type AppInfoRecord = NullExtraInfo;
 
 	fn is_valid(_data: &[u8], header: &DatabaseHeader) -> bool {
 		if header.attributes & (1 << 0) == 0 {
@@ -38,6 +43,22 @@ impl DatabaseFormat for PrcDatabase {
 pub struct PdbDatabase;
 impl DatabaseFormat for PdbDatabase {
 	type RecordHeader = PdbRecordHeader;
+	type AppInfoRecord = NullExtraInfo;
+
+	fn is_valid(_data: &[u8], header: &DatabaseHeader) -> bool {
+		if header.attributes & (1 << 0) != 0 {
+			return false;
+		}
+
+		true
+	}
+}
+
+/// Implementation of [`DatabaseFormat`] for PDB databases that contain category information
+pub struct PdbWithCategoriesDatabase;
+impl DatabaseFormat for PdbWithCategoriesDatabase {
+	type RecordHeader = PdbRecordHeader;
+	type AppInfoRecord = AppInfoCategories;
 
 	fn is_valid(_data: &[u8], header: &DatabaseHeader) -> bool {
 		if header.attributes & (1 << 0) != 0 {
@@ -55,6 +76,7 @@ impl DatabaseFormat for PdbDatabase {
 #[derive(Clone, PartialEq)]
 pub struct PalmDatabase<'a, T: DatabaseFormat> {
 	pub header: DatabaseHeader,
+	pub app_info: T::AppInfoRecord,
 	pub records: Vec<(T::RecordHeader, Vec<u8>)>,
 	data: &'a [u8],
 	_marker: PhantomData<T>,
@@ -70,6 +92,8 @@ impl<'a, T: DatabaseFormat> PalmDatabase<'a, T> {
 				"database is not valid",
 			));
 		}
+
+		let app_info = T::AppInfoRecord::from_bytes(&header, &data, header.app_info_id as usize)?;
 
 		let mut rec_offset: usize = DATABASE_HEADER_LENGTH;
 		let mut records: Vec<(T::RecordHeader, Vec<u8>)> = Vec::new();
@@ -89,6 +113,7 @@ impl<'a, T: DatabaseFormat> PalmDatabase<'a, T> {
 
 		Ok(Self {
 			header,
+			app_info,
 			records,
 			data,
 			_marker: PhantomData,
@@ -101,6 +126,7 @@ impl<'a, T: DatabaseFormat> Debug for PalmDatabase<'a, T> {
 		f.debug_struct("PalmDatabase")
 			.field("type", &std::any::type_name::<T>())
 			.field("header", &self.header)
+			.field("app_info", &self.app_info)
 			.field("records", &self.records)
 			.finish()
 	}

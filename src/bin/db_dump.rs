@@ -2,10 +2,11 @@ use std::path::PathBuf;
 
 use palmrs::database::{
 	header::DatabaseHeader,
+	info::ExtraInfoRecord,
 	record::DatabaseRecord,
 	DatabaseFormat,
 	PalmDatabase,
-	PdbDatabase,
+	PdbWithCategoriesDatabase,
 	PrcDatabase,
 };
 use pretty_hex::{config_hex, HexConfig};
@@ -61,7 +62,66 @@ fn perform_dump_header(header: &DatabaseHeader) -> Result<(), Report> {
 	Ok(())
 }
 
-fn perform_dump_record<T>(idx: usize, rec_hdr: T, rec_data: &[u8], opt: &Opt) -> Result<(), Report>
+fn perform_dump_app_info<T, R>(
+	hdr: &DatabaseHeader,
+	app_info: &T,
+	rec_first: &R,
+	data: &[u8],
+	opt: &Opt,
+) -> Result<(), Report>
+where
+	T: ExtraInfoRecord,
+	R: DatabaseRecord,
+{
+	log::trace!("app_info = {:#?}", app_info);
+	if app_info.data_empty() {
+		return Ok(());
+	}
+
+	let rec_offset = rec_first.data_offset() as usize;
+	let app_info_offset = hdr.app_info_id as usize;
+	let app_info_len = rec_offset - app_info_offset;
+
+	let has_categories = if let Some(categories) = app_info.data_item_categories() {
+		categories.len() > 0
+	} else {
+		false
+	};
+
+	println!();
+	println!(
+		"App info: offset={:#X} length={:#X} has_categories={:?}",
+		app_info_offset, app_info_len, has_categories,
+	);
+
+	if let Some(categories) = app_info.data_item_categories() {
+		for cat in categories.iter() {
+			println!(
+				"  Category {}: name={:?} renamed={:?}",
+				cat.category_id,
+				cat.name_try_str().unwrap_or(""),
+				cat.renamed,
+			);
+		}
+	}
+
+	if opt.hexdump_records {
+		println!(
+			"{}",
+			config_hex(
+				&&data[app_info_offset..(app_info_offset + app_info_len)],
+				HexConfig {
+					title: false,
+					..HexConfig::default()
+				},
+			)
+		);
+	}
+
+	Ok(())
+}
+
+fn perform_dump_record<T>(idx: usize, rec_hdr: &T, rec_data: &[u8], opt: &Opt) -> Result<(), Report>
 where
 	T: DatabaseRecord,
 {
@@ -104,8 +164,12 @@ fn perform_dump<T: DatabaseFormat>(data: &[u8], opt: &Opt) -> Result<(), Report>
 	log::trace!("database.header = {:#?}", &database.header);
 	perform_dump_header(&database.header)?;
 
-	// Dump each record
-	for (idx, (rec_hdr, rec_data)) in (0..).zip(database.records.into_iter()) {
+	// Dump each record, additionally dumping app info before the first record
+	for (idx, (rec_hdr, rec_data)) in (0..).zip(database.records.iter()) {
+		if idx == 0 {
+			perform_dump_app_info(&database.header, &database.app_info, rec_hdr, &data, &opt)?;
+		}
+
 		println!();
 		perform_dump_record(idx, rec_hdr, &rec_data, &opt)?;
 	}
@@ -144,7 +208,7 @@ fn main() -> Result<(), Report> {
 
 	match db_type {
 		"prc" => perform_dump::<PrcDatabase>(&content[..], &opt),
-		"pdb" => perform_dump::<PdbDatabase>(&content[..], &opt),
+		"pdb" => perform_dump::<PdbWithCategoriesDatabase>(&content[..], &opt),
 		_ => unreachable!(),
 	}
 }

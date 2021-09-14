@@ -2,7 +2,14 @@
 
 mod format;
 pub mod header;
+pub mod info;
 pub mod record;
 pub mod time;
 
-pub use self::format::{DatabaseFormat, PalmDatabase, PdbDatabase, PrcDatabase};
+pub use self::format::{
+	DatabaseFormat,
+	PalmDatabase,
+	PdbDatabase,
+	PdbWithCategoriesDatabase,
+	PrcDatabase,
+};

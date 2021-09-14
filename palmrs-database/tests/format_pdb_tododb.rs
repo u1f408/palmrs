@@ -1,4 +1,10 @@
-use palmrs_database::{header::DatabaseHeader, record::DatabaseRecord, PalmDatabase, PdbDatabase};
+use palmrs_database::{
+	header::DatabaseHeader,
+	info::ExtraInfoRecord,
+	record::DatabaseRecord,
+	PalmDatabase,
+	PdbWithCategoriesDatabase,
+};
 use test_env_log::test;
 
 const EXAMPLE_PDB: &'static [u8] = include_bytes!("../../test-data/ToDoDB.pdb");
@@ -13,10 +19,19 @@ fn read_header() {
 
 #[test]
 fn read_database_full() {
-	let database = PalmDatabase::<PdbDatabase>::from_bytes(&EXAMPLE_PDB).unwrap();
+	let database = PalmDatabase::<PdbWithCategoriesDatabase>::from_bytes(&EXAMPLE_PDB).unwrap();
 
-	// TODO: get "app info" section
-	// TODO: get "sort info" section
+	// Check for categories in the app info record
+	if let Some(categories) = database.app_info.data_item_categories() {
+		for cat in categories.iter() {
+			assert!(cat.category_id < 16);
+
+			// make sure category 0 is "unfiled"
+			if cat.category_id == 0 {
+				assert_eq!(cat.name_try_str().ok(), Some("Unfiled"));
+			}
+		}
+	}
 
 	// Test record iteration
 	for (_idx, (rec_hdr, rec_data)) in (0..).zip(database.records.iter()) {
