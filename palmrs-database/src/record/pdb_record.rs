@@ -13,29 +13,23 @@ use crate::{header::DatabaseHeader, record::DatabaseRecord};
 
 /// Generic record header type helper trait
 pub trait PdbRecordHeaderTrait {
-	fn struct_len(&self) -> usize;
+	fn record_struct_len(&self) -> usize;
 	fn next_entry_data_offset(&self) -> usize;
 }
 
-/// "Record" header type
-pub struct RecordHeaderType;
-impl PdbRecordHeaderTrait for RecordHeaderType {
-	fn struct_len(&self) -> usize {
-		8
-	}
-	fn next_entry_data_offset(&self) -> usize {
-		0
-	}
-}
-
 /// "Resource" header type
-pub struct ResourceHeaderType;
-impl PdbRecordHeaderTrait for ResourceHeaderType {
-	fn struct_len(&self) -> usize {
-		10
+impl PdbRecordHeaderTrait for PdbRecordHeader {
+	fn record_struct_len(&self) -> usize {
+		match self {
+			PdbRecordHeader::Record { .. } => 8,
+			PdbRecordHeader::Resource { .. } => 10,
+		}
 	}
 	fn next_entry_data_offset(&self) -> usize {
-		6
+		match self {
+			PdbRecordHeader::Record { .. } => 0,
+			PdbRecordHeader::Resource { .. } => 6,
+		}
 	}
 }
 
@@ -70,18 +64,9 @@ pub enum PdbRecordHeader {
 	},
 }
 
-impl PdbRecordHeader {
-	pub fn header_type(&self) -> &dyn PdbRecordHeaderTrait {
-		match self {
-			Self::Record { .. } => &RecordHeaderType,
-			Self::Resource { .. } => &ResourceHeaderType,
-		}
-	}
-}
-
 impl DatabaseRecord for PdbRecordHeader {
 	fn struct_len(&self) -> usize {
-		self.header_type().struct_len()
+		<Self as PdbRecordHeaderTrait>::record_struct_len(self)
 	}
 
 	fn from_bytes(hdr: &DatabaseHeader, data: &[u8], pos: usize) -> Result<Self, io::Error> {
@@ -128,9 +113,7 @@ impl DatabaseRecord for PdbRecordHeader {
 			};
 
 			let position = rdr.stream_position()?;
-			let data_len = match rdr.seek(SeekFrom::Current(
-				this.header_type().next_entry_data_offset() as i64,
-			)) {
+			let data_len = match rdr.seek(SeekFrom::Current(this.next_entry_data_offset() as i64)) {
 				Ok(_) => match rdr.read_u32::<BigEndian>() {
 					Ok(next_offset) => {
 						if next_offset > data_offset {
@@ -162,8 +145,8 @@ impl DatabaseRecord for PdbRecordHeader {
 		Ok(this)
 	}
 
-	fn write_bytes(&self) -> Result<Vec<u8>, io::Error> {
-		let mut buf = Cursor::new(Vec::with_capacity(self.header_type().struct_len()));
+	fn to_bytes(&self) -> Result<Vec<u8>, io::Error> {
+		let mut buf = Cursor::new(Vec::with_capacity(self.struct_len()));
 
 		match self {
 			Self::Record {
@@ -236,5 +219,56 @@ impl DatabaseRecord for PdbRecordHeader {
 			Self::Record { data_len, .. } => *data_len,
 			Self::Resource { data_len, .. } => *data_len,
 		}
+	}
+}
+
+#[cfg(test)]
+mod test {
+	use crate::{
+		header::DATABASE_HEADER_LENGTH,
+		record::{pdb_record::PdbRecordHeader, DatabaseRecord},
+		DatabaseFormat,
+		PalmDatabase,
+		PdbDatabase,
+		PdbWithCategoriesDatabase,
+		PrcDatabase,
+	};
+
+	const EXAMPLE_PRC: &'static [u8] = include_bytes!("../../../test-data/hello-v1.prc");
+	const EXAMPLE_PDB: &'static [u8] = include_bytes!("../../../test-data/ToDoDB.pdb");
+	const MANUAL_PDB: &'static [u8] = include_bytes!("../../../test-data/tWmanual.pdb");
+
+	fn test_db<T: DatabaseFormat>(src_bytes: &'static [u8])
+	where
+		<T as DatabaseFormat>::RecordHeader: PartialEq<PdbRecordHeader>,
+	{
+		let database = PalmDatabase::<T>::from_bytes(src_bytes).unwrap();
+
+		eprintln!(
+			"Testing records for: {}",
+			database.header.name_try_str().unwrap()
+		);
+		let mut rec_start_offset = DATABASE_HEADER_LENGTH;
+		// Test record iteration
+		for (_idx, (rec_hdr, rec_data)) in (0..).zip(database.records.iter()) {
+			assert_eq!(rec_data.len(), rec_hdr.data_len().unwrap_or(0) as usize);
+			assert_eq!(
+				rec_hdr,
+				&PdbRecordHeader::from_bytes(
+					&database.header,
+					database.original_data,
+					rec_start_offset
+				)
+				.unwrap()
+			);
+			rec_start_offset += rec_hdr.struct_len();
+		}
+	}
+
+	#[test]
+	fn test_records_all_db_types() {
+		test_db::<PrcDatabase>(&EXAMPLE_PRC);
+		test_db::<PdbDatabase>(&MANUAL_PDB);
+		test_db::<PdbWithCategoriesDatabase>(&EXAMPLE_PDB);
 	}
 }

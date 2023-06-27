@@ -1,9 +1,11 @@
+// http://preserve.mactech.com/articles/mactech/Vol.21/21.08/PDBFile/index.html reference data
+
 //! Item category record helpers
 
 use core::{fmt::Debug, str};
-use std::io::{self, Cursor, Read, Seek, SeekFrom};
+use std::io::{self, Cursor, Read, Seek, SeekFrom, Write};
 
-use byteorder::{BigEndian, ReadBytesExt};
+use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{header::DatabaseHeader, info::ExtraInfoRecord};
 
@@ -50,9 +52,26 @@ impl ExtraInfoCategory {
 	}
 }
 
+// struct // from reference at top of page
+// {
+//     unsigned short renamedCategories;
+//     unsigned char  categoryLabels[16][16];
+//     unsigned char  categoryUniqueIDs[16];
+//     unsigned char  lastUniqueID;
+//     unsigned char  RSVD;
+// } 	AppInfoType;
+
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct AppInfoCategories {
+	/// The number of categories renamed by the user
+	pub renamed_categories: u16,
 	pub categories: Vec<ExtraInfoCategory>,
+	category_unique_ids: [u8; 16],
+	last_unique_id: u8,
+	rsvd: u8,
+
+	/// check if it's a data header and shouldn't have categories
+	is_data: bool,
 }
 
 impl AppInfoCategories {
@@ -75,7 +94,7 @@ impl AppInfoCategories {
 			};
 
 			if name == [0u8; 16] {
-				break;
+				continue;
 			}
 
 			categories.push(ExtraInfoCategory {
@@ -85,17 +104,53 @@ impl AppInfoCategories {
 			});
 		}
 
-		Ok(Self { categories })
+		let mut category_unique_ids = [0_u8; 16];
+		for idx in 0..16 {
+			category_unique_ids[idx] = rdr.read_u8()?;
+		}
+
+		let last_unique_id = rdr.read_u8()?;
+		let rsvd = rdr.read_u8()?;
+
+		Ok(Self {
+			renamed_categories: renamed_flags,
+			categories,
+			category_unique_ids,
+			last_unique_id,
+			rsvd,
+			is_data: true,
+		})
 	}
 }
 
 impl ExtraInfoRecord for AppInfoCategories {
+	const SIZE: usize = 2 + 16 * 16 + 16 + 1 + 1;
+
 	fn from_bytes(hdr: &DatabaseHeader, data: &[u8], pos: usize) -> Result<Self, io::Error> {
 		Self::from_bytes(hdr, data, pos)
 	}
 
-	fn write_bytes(&self) -> Result<Vec<u8>, io::Error> {
-		unimplemented!();
+	fn to_bytes(&self) -> Result<Vec<u8>, io::Error> {
+		if !self.is_data {
+			// this is not a data-type record and should not have categories
+			return Ok(vec![]);
+		}
+
+		let mut cursor = Cursor::new(Vec::new());
+
+		cursor.write_u16::<BigEndian>(self.renamed_categories)?;
+
+		for cat in self.categories.iter() {
+			cursor.write(&cat.name)?;
+		}
+		for _ in self.categories.len()..16 {
+			cursor.write(&[0_u8; 16])?;
+		}
+		cursor.write(&self.category_unique_ids)?;
+		cursor.write_u8(self.last_unique_id)?;
+		cursor.write_u8(self.rsvd)?;
+
+		Ok(cursor.into_inner())
 	}
 
 	fn data_empty(&self) -> bool {

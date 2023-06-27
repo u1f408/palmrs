@@ -20,7 +20,7 @@ pub trait DatabaseRecord: Sized + Debug {
 	fn from_bytes(hdr: &DatabaseHeader, data: &[u8], pos: usize) -> Result<Self, io::Error>;
 
 	/// Write the record header to a new `Vec<u8>`
-	fn write_bytes(&self) -> Result<Vec<u8>, io::Error>;
+	fn to_bytes(&self) -> Result<Vec<u8>, io::Error>;
 
 	/// Return the record's name, if known
 	fn name_str(&self) -> Option<&str>;
