@@ -1,3 +1,3 @@
-(function() {var implementors = {};
-implementors["palmrs_sync"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/str/traits/trait.FromStr.html\" title=\"trait core::str::traits::FromStr\">FromStr</a> for <a class=\"enum\" href=\"palmrs_sync/enum.SyncMode.html\" title=\"enum palmrs_sync::SyncMode\">SyncMode</a>","synthetic":false,"types":["palmrs_sync::SyncMode"]}];
-if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
+(function() {var implementors = {
+"palmrs_sync":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/str/traits/trait.FromStr.html\" title=\"trait core::str::traits::FromStr\">FromStr</a> for <a class=\"enum\" href=\"palmrs_sync/enum.SyncMode.html\" title=\"enum palmrs_sync::SyncMode\">SyncMode</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

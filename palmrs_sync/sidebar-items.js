@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["SyncMode","Sync mode"]],"mod":[["conduit","Sync conduit handling"]]});
+window.SIDEBAR_ITEMS = {"enum":["SyncMode"],"mod":["conduit"]};

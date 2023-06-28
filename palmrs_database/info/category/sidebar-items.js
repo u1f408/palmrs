@@ -1,1 +1,1 @@
-initSidebarItems({"constant":[["CATEGORY_ATTRIBUTE_MASK","Item record category bitmask"]],"struct":[["AppInfoCategories",""],["ExtraInfoCategory","Representation of an item category"]]});
+window.SIDEBAR_ITEMS = {"constant":["CATEGORY_ATTRIBUTE_MASK"],"struct":["AppInfoCategories","ExtraInfoCategory"]};

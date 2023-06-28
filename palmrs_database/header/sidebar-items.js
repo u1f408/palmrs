@@ -1,1 +1,1 @@
-initSidebarItems({"constant":[["DATABASE_HEADER_LENGTH","Length, in bytes, of the [`DatabaseHeader`]"]],"struct":[["DatabaseHeader","The common file header used by both the PRC and PDB databases."]]});
+window.SIDEBAR_ITEMS = {"constant":["DATABASE_HEADER_LENGTH"],"struct":["DatabaseHeader"]};

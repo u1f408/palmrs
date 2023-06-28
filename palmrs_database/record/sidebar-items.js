@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["pdb_record","Palm database record headers"]],"trait":[["DatabaseRecord","Helper trait for database record types"]]});
+window.SIDEBAR_ITEMS = {"mod":["pdb_record"],"trait":["DatabaseRecord"]};

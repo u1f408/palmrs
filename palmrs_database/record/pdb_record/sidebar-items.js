@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["PdbRecordHeader","Generic Palm database record header"]],"struct":[["RecordHeaderType","“Record” header type"],["ResourceHeaderType","“Resource” header type"]],"trait":[["PdbRecordHeaderTrait","Generic record header type helper trait"]]});
+window.SIDEBAR_ITEMS = {"enum":["PdbRecordHeader"],"trait":["PdbRecordHeaderTrait"]};
