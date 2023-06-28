@@ -34,8 +34,13 @@ fn read_database_full() {
 	}
 
 	// Test record iteration
-	for (_idx, (rec_hdr, rec_data)) in (0..).zip(database.records.iter()) {
+	for (_idx, (rec_hdr, rec_data)) in database.records.iter().enumerate() {
 		assert_eq!(rec_data.len(), rec_hdr.data_len().unwrap_or(0) as usize);
 		assert!(rec_hdr.attributes().unwrap_or(0) & 0x40 != 0);
 	}
+
+	let bytes = database.to_bytes().unwrap();
+
+	assert_eq!(bytes.len(), EXAMPLE_PDB.len());
+	assert_eq!(&EXAMPLE_PDB, &bytes);
 }

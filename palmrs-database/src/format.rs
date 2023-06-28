@@ -4,13 +4,16 @@ use core::{
 	fmt::{self, Debug, Display},
 	marker::PhantomData,
 };
-use std::io;
+use std::io::{self, Cursor, Write};
 
 use crate::{
 	header::{DatabaseHeader, DATABASE_HEADER_LENGTH},
 	info::{category::AppInfoCategories, ExtraInfoRecord, NullExtraInfo},
 	record::{pdb_record::PdbRecordHeader, DatabaseRecord},
 };
+
+// add 2 bytes of padding for < os3.5 compatible PRCs
+const COMPAT_PADDING: usize = 2;
 
 /// Helper trait for database format types
 pub trait DatabaseFormat {
@@ -77,8 +80,9 @@ impl DatabaseFormat for PdbWithCategoriesDatabase {
 pub struct PalmDatabase<'a, T: DatabaseFormat> {
 	pub header: DatabaseHeader,
 	pub app_info: T::AppInfoRecord,
+	application_reserved: Vec<u8>,
 	pub records: Vec<(T::RecordHeader, Vec<u8>)>,
-	data: &'a [u8],
+	pub(crate) original_data: &'a [u8],
 	_marker: PhantomData<T>,
 }
 
@@ -111,13 +115,50 @@ impl<'a, T: DatabaseFormat> PalmDatabase<'a, T> {
 			records.push((record, record_data));
 		}
 
+		let application_reserved: Vec<u8>;
+		if (header.record_count > 0)
+			&& ((records[0].0.data_offset() as usize)
+				> rec_offset + T::AppInfoRecord::SIZE + COMPAT_PADDING)
+		{
+			let first_record_data_start = records[0].0.data_offset() as usize;
+			application_reserved = Vec::from(
+				&data[(rec_offset + T::AppInfoRecord::SIZE + COMPAT_PADDING)
+					..(first_record_data_start)],
+			)
+		} else {
+			application_reserved = Vec::new()
+		};
+
 		Ok(Self {
 			header,
 			app_info,
+			application_reserved,
 			records,
-			data,
+			original_data: data,
 			_marker: PhantomData,
 		})
+	}
+
+	pub fn to_bytes(self) -> std::io::Result<Vec<u8>> {
+		let mut cursor = Cursor::new(self.header.to_bytes()?);
+		cursor.set_position(cursor.get_ref().len() as u64);
+
+		for (record_header, _) in self.records.iter() {
+			cursor.write(&record_header.to_bytes()?)?;
+		}
+
+		cursor.write(&[0_u8; COMPAT_PADDING])?;
+
+		cursor.write(&self.app_info.to_bytes()?)?;
+
+		// add any reserved data
+		cursor.write(&self.application_reserved)?;
+
+		for (_, record_data) in self.records.iter() {
+			cursor.write(&record_data)?;
+		}
+
+		Ok(cursor.into_inner())
 	}
 }
 
