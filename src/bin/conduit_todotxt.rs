@@ -106,7 +106,7 @@ pub fn device_database_parse(db_path: &Path) -> Result<Vec<ToDoTask>, Report> {
 	};
 
 	let mut tasks = Vec::new();
-	'dbtaskparse: for (idx, (rec_hdr, rec_data)) in (0..).zip(database.records.iter()) {
+	'dbtaskparse: for (idx, (rec_hdr, rec_data)) in (0..).zip(database.list_records_resources().iter()) {
 		log::trace!("records[{}].rec_hdr = {:?}", idx, &rec_hdr);
 		if rec_hdr.data_len().unwrap_or(0) == 0 {
 			break 'dbtaskparse;

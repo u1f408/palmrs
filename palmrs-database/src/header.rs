@@ -39,9 +39,7 @@ impl DatabaseHeader {
 	pub const SIZE: usize = DATABASE_HEADER_LENGTH;
 
 	/// Read the database header from the given byte slice.
-	pub fn from_bytes(data: &[u8]) -> Result<Self, io::Error> {
-		let mut rdr = Cursor::new(&data[..DATABASE_HEADER_LENGTH]);
-
+	pub fn from_bytes(rdr: &mut Cursor<&[u8]>) -> Result<Self, io::Error> {
 		// Read all the data
 
 		let name = {

@@ -165,7 +165,7 @@ fn perform_dump<T: DatabaseFormat>(data: &[u8], opt: &Opt) -> Result<(), Report>
 	perform_dump_header(&database.header)?;
 
 	// Dump each record, additionally dumping app info before the first record
-	for (idx, (rec_hdr, rec_data)) in (0..).zip(database.records.iter()) {
+	for (idx, (rec_hdr, rec_data)) in (0..).zip(database.list_records_resources().iter()) {
 		if idx == 0 {
 			perform_dump_app_info(&database.header, &database.app_info, rec_hdr, &data, &opt)?;
 		}

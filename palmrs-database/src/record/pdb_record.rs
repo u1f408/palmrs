@@ -9,29 +9,8 @@ use std::io::{self, Cursor, Read, Seek, SeekFrom};
 
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 
+use super::sealed::DatabaseRecordHelpers;
 use crate::{header::DatabaseHeader, record::DatabaseRecord};
-
-/// Generic record header type helper trait
-pub trait PdbRecordHeaderTrait {
-	fn record_struct_len(&self) -> usize;
-	fn next_entry_data_offset(&self) -> usize;
-}
-
-/// "Resource" header type
-impl PdbRecordHeaderTrait for PdbRecordHeader {
-	fn record_struct_len(&self) -> usize {
-		match self {
-			PdbRecordHeader::Record { .. } => 8,
-			PdbRecordHeader::Resource { .. } => 10,
-		}
-	}
-	fn next_entry_data_offset(&self) -> usize {
-		match self {
-			PdbRecordHeader::Record { .. } => 0,
-			PdbRecordHeader::Resource { .. } => 6,
-		}
-	}
-}
 
 /// Generic Palm database record header
 ///
@@ -64,15 +43,31 @@ pub enum PdbRecordHeader {
 	},
 }
 
-impl DatabaseRecord for PdbRecordHeader {
+impl DatabaseRecordHelpers for PdbRecordHeader {
 	fn struct_len(&self) -> usize {
-		<Self as PdbRecordHeaderTrait>::record_struct_len(self)
+		match self {
+			PdbRecordHeader::Record { .. } => 8,
+			PdbRecordHeader::Resource { .. } => 10,
+		}
 	}
 
-	fn from_bytes(hdr: &DatabaseHeader, data: &[u8], pos: usize) -> Result<Self, io::Error> {
-		let mut rdr = Cursor::new(&data);
-		rdr.seek(SeekFrom::Start(pos as u64))?;
+	fn next_entry_data_offset(&self) -> usize {
+		match self {
+			PdbRecordHeader::Record { .. } => 0,
+			PdbRecordHeader::Resource { .. } => 6,
+		}
+	}
 
+	fn data_offset(&self) -> u32 {
+		match self {
+			Self::Record { data_offset, .. } => *data_offset,
+			Self::Resource { data_offset, .. } => *data_offset,
+		}
+	}
+}
+
+impl DatabaseRecord for PdbRecordHeader {
+	fn from_bytes(hdr: &DatabaseHeader, rdr: &mut Cursor<&[u8]>) -> Result<Self, io::Error> {
 		let mut this = if hdr.attributes & (1 << 0) == 0 {
 			// Type bit clear: construct "records"
 
@@ -119,14 +114,14 @@ impl DatabaseRecord for PdbRecordHeader {
 						if next_offset > data_offset {
 							next_offset - data_offset
 						} else {
-							(data.len() as u32) - data_offset
+							(rdr.get_ref().len() as u32) - data_offset
 						}
 					}
 
-					Err(_) => (data.len() as u32) - data_offset,
+					Err(_) => (rdr.get_ref().len() as u32) - data_offset,
 				},
 
-				Err(_) => (data.len() as u32) - data_offset,
+				Err(_) => (rdr.get_ref().len() as u32) - data_offset,
 			};
 
 			rdr.seek(SeekFrom::Start(position))?;
@@ -207,13 +202,6 @@ impl DatabaseRecord for PdbRecordHeader {
 		}
 	}
 
-	fn data_offset(&self) -> u32 {
-		match self {
-			Self::Record { data_offset, .. } => *data_offset,
-			Self::Resource { data_offset, .. } => *data_offset,
-		}
-	}
-
 	fn data_len(&self) -> Option<u32> {
 		match self {
 			Self::Record { data_len, .. } => *data_len,
@@ -224,9 +212,11 @@ impl DatabaseRecord for PdbRecordHeader {
 
 #[cfg(test)]
 mod test {
+	use std::io::Cursor;
+
 	use crate::{
 		header::DATABASE_HEADER_LENGTH,
-		record::{pdb_record::PdbRecordHeader, DatabaseRecord},
+		record::{pdb_record::PdbRecordHeader, DatabaseRecord, DatabaseRecordHelpers},
 		DatabaseFormat,
 		PalmDatabase,
 		PdbDatabase,
@@ -249,17 +239,15 @@ mod test {
 			database.header.name_try_str().unwrap()
 		);
 		let mut rec_start_offset = DATABASE_HEADER_LENGTH;
+		let mut cursor = Cursor::new(database.original_data);
+		cursor.set_position(rec_start_offset as u64);
 		// Test record iteration
-		for (_idx, (rec_hdr, rec_data)) in (0..).zip(database.records.iter()) {
+		for (_idx, (rec_hdr, rec_data)) in (0..).zip(database.list_records_resources().iter()) {
 			assert_eq!(rec_data.len(), rec_hdr.data_len().unwrap_or(0) as usize);
+
 			assert_eq!(
 				rec_hdr,
-				&PdbRecordHeader::from_bytes(
-					&database.header,
-					database.original_data,
-					rec_start_offset
-				)
-				.unwrap()
+				&PdbRecordHeader::from_bytes(&database.header, &mut cursor).unwrap()
 			);
 			rec_start_offset += rec_hdr.struct_len();
 		}

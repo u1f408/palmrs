@@ -4,19 +4,21 @@ use core::{
 	fmt::{self, Debug, Display},
 	marker::PhantomData,
 };
-use std::io::{self, Cursor, Write};
+use std::io::{self, Cursor, Read, Write};
 
 use crate::{
-	header::{DatabaseHeader, DATABASE_HEADER_LENGTH},
+	header::DatabaseHeader,
 	info::{category::AppInfoCategories, ExtraInfoRecord, NullExtraInfo},
-	record::{pdb_record::PdbRecordHeader, DatabaseRecord},
+	record::{pdb_record::PdbRecordHeader, DatabaseRecord, DatabaseRecordHelpers},
 };
 
 // add 2 bytes of padding for < os3.5 compatible PRCs
-const COMPAT_PADDING: usize = 2;
+const COMPAT_PADDING_LEN: usize = 2;
 
 /// Helper trait for database format types
 pub trait DatabaseFormat {
+	const USES_COMPAT_PADDING: bool;
+
 	/// The record header type for this database format
 	type RecordHeader: DatabaseRecord;
 
@@ -30,6 +32,7 @@ pub trait DatabaseFormat {
 /// Implementation of [`DatabaseFormat`] for PRC databases
 pub struct PrcDatabase;
 impl DatabaseFormat for PrcDatabase {
+	const USES_COMPAT_PADDING: bool = false;
 	type RecordHeader = PdbRecordHeader;
 	type AppInfoRecord = NullExtraInfo;
 
@@ -45,6 +48,7 @@ impl DatabaseFormat for PrcDatabase {
 /// Implementation of [`DatabaseFormat`] for PDB databases
 pub struct PdbDatabase;
 impl DatabaseFormat for PdbDatabase {
+	const USES_COMPAT_PADDING: bool = false;
 	type RecordHeader = PdbRecordHeader;
 	type AppInfoRecord = NullExtraInfo;
 
@@ -60,6 +64,7 @@ impl DatabaseFormat for PdbDatabase {
 /// Implementation of [`DatabaseFormat`] for PDB databases that contain category information
 pub struct PdbWithCategoriesDatabase;
 impl DatabaseFormat for PdbWithCategoriesDatabase {
+	const USES_COMPAT_PADDING: bool = true;
 	type RecordHeader = PdbRecordHeader;
 	type AppInfoRecord = AppInfoCategories;
 
@@ -80,15 +85,21 @@ impl DatabaseFormat for PdbWithCategoriesDatabase {
 pub struct PalmDatabase<'a, T: DatabaseFormat> {
 	pub header: DatabaseHeader,
 	pub app_info: T::AppInfoRecord,
+
+	/// Also called sortInfo
 	application_reserved: Vec<u8>,
-	pub records: Vec<(T::RecordHeader, Vec<u8>)>,
+
+	/// record headers together with their contained data. This is for convenience,
+	/// and does not match the on-disk layout
+	records: Vec<(T::RecordHeader, Vec<u8>)>,
 	pub(crate) original_data: &'a [u8],
 	_marker: PhantomData<T>,
 }
 
 impl<'a, T: DatabaseFormat> PalmDatabase<'a, T> {
 	pub fn from_bytes(data: &'a [u8]) -> Result<Self, io::Error> {
-		let header = DatabaseHeader::from_bytes(&data)?;
+		let mut rdr = Cursor::new(data);
+		let header = DatabaseHeader::from_bytes(&mut rdr)?;
 
 		if !T::is_valid(&data, &header) {
 			return Err(io::Error::new(
@@ -97,37 +108,40 @@ impl<'a, T: DatabaseFormat> PalmDatabase<'a, T> {
 			));
 		}
 
-		let app_info = T::AppInfoRecord::from_bytes(&header, &data, header.app_info_id as usize)?;
-
-		let mut rec_offset: usize = DATABASE_HEADER_LENGTH;
-		let mut records: Vec<(T::RecordHeader, Vec<u8>)> = Vec::new();
+		let mut record_headers: Vec<T::RecordHeader> = Vec::new();
 		for _idx in 0..header.record_count {
 			// parse record header
-			let record = T::RecordHeader::from_bytes(&header, &data, rec_offset)?;
+			let record = T::RecordHeader::from_bytes(&header, &mut rdr)?;
 
-			// get record data
-			let data_offset = record.data_offset() as usize;
-			let data_len = record.data_len().unwrap_or(0) as usize;
-			let record_data = Vec::from(&data[data_offset..(data_offset + data_len)]);
-
-			// offset & store
-			rec_offset += record.struct_len();
-			records.push((record, record_data));
+			// store
+			record_headers.push(record);
 		}
 
+		if T::USES_COMPAT_PADDING {
+			rdr.read_exact(&mut [0_u8; COMPAT_PADDING_LEN])?;
+		}
+
+		let app_info = T::AppInfoRecord::from_bytes(&header, &mut rdr)?;
+
 		let application_reserved: Vec<u8>;
-		if (header.record_count > 0)
-			&& ((records[0].0.data_offset() as usize)
-				> rec_offset + T::AppInfoRecord::SIZE + COMPAT_PADDING)
-		{
-			let first_record_data_start = records[0].0.data_offset() as usize;
-			application_reserved = Vec::from(
-				&data[(rec_offset + T::AppInfoRecord::SIZE + COMPAT_PADDING)
-					..(first_record_data_start)],
-			)
+		let app_info_end = rdr.position() as usize;
+		let first_record_data_start = record_headers[0].data_offset() as usize;
+		if (header.record_count > 0) && (first_record_data_start > app_info_end) {
+			let mut buf = vec![0_u8; first_record_data_start - app_info_end];
+			rdr.read_exact(&mut buf)?;
+			application_reserved = buf;
 		} else {
 			application_reserved = Vec::new()
 		};
+
+		let mut records: Vec<(T::RecordHeader, Vec<u8>)> = Vec::new();
+		for record_header in record_headers {
+			let record_data_start = record_header.data_offset();
+			let record_data_end = record_data_start + record_header.data_len().unwrap_or(0);
+			let mut record_data = vec![0_u8; (record_data_end - record_data_start) as usize];
+			rdr.read_exact(&mut record_data)?;
+			records.push((record_header, record_data));
+		}
 
 		Ok(Self {
 			header,
@@ -147,7 +161,9 @@ impl<'a, T: DatabaseFormat> PalmDatabase<'a, T> {
 			cursor.write(&record_header.to_bytes()?)?;
 		}
 
-		cursor.write(&[0_u8; COMPAT_PADDING])?;
+		if T::USES_COMPAT_PADDING {
+			cursor.write(&[0_u8; COMPAT_PADDING_LEN])?;
+		}
 
 		cursor.write(&self.app_info.to_bytes()?)?;
 
@@ -160,6 +176,18 @@ impl<'a, T: DatabaseFormat> PalmDatabase<'a, T> {
 
 		Ok(cursor.into_inner())
 	}
+
+	pub fn list_records_resources(&self) -> &[(T::RecordHeader, Vec<u8>)] {
+		&self.records
+	}
+
+	pub fn insert_record() {}
+
+	pub fn insert_resource() {}
+
+	pub fn remove_record() {}
+
+	pub fn remove_resources() {}
 }
 
 impl<'a, T: DatabaseFormat> Debug for PalmDatabase<'a, T> {

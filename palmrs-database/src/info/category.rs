@@ -3,7 +3,7 @@
 //! Item category record helpers
 
 use core::{fmt::Debug, str};
-use std::io::{self, Cursor, Read, Seek, SeekFrom, Write};
+use std::io::{self, Cursor, Read, Write};
 
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 
@@ -75,14 +75,11 @@ pub struct AppInfoCategories {
 }
 
 impl AppInfoCategories {
-	pub fn from_bytes(hdr: &DatabaseHeader, data: &[u8], pos: usize) -> Result<Self, io::Error> {
+	pub fn from_bytes(hdr: &DatabaseHeader, rdr: &mut Cursor<&[u8]>) -> Result<Self, io::Error> {
 		// Do a quick check by type/creator codes for whether we should actually have categories
 		if &hdr.type_code[..] != b"DATA" {
 			return Ok(Default::default());
 		}
-
-		let mut rdr = Cursor::new(&data);
-		rdr.seek(SeekFrom::Start(pos as u64))?;
 
 		let mut categories = Vec::new();
 		let renamed_flags = rdr.read_u16::<BigEndian>()?;
@@ -126,8 +123,8 @@ impl AppInfoCategories {
 impl ExtraInfoRecord for AppInfoCategories {
 	const SIZE: usize = 2 + 16 * 16 + 16 + 1 + 1;
 
-	fn from_bytes(hdr: &DatabaseHeader, data: &[u8], pos: usize) -> Result<Self, io::Error> {
-		Self::from_bytes(hdr, data, pos)
+	fn from_bytes(hdr: &DatabaseHeader, data: &mut Cursor<&[u8]>) -> Result<Self, io::Error> {
+		Self::from_bytes(hdr, data)
 	}
 
 	fn to_bytes(&self) -> Result<Vec<u8>, io::Error> {
