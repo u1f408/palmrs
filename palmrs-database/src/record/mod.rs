@@ -23,10 +23,32 @@ pub trait DatabaseRecord: Sized + Debug + sealed::DatabaseRecordHelpers {
 	fn name_str(&self) -> Option<&str>;
 
 	/// Return the record's attributes, if known
-	fn attributes(&self) -> Option<u32>;
+	fn attributes(&self) -> Option<RecordAttributes>;
 
 	/// Return the length of the record's data, if known
 	fn data_len(&self) -> Option<u32>;
+
+	/// Return the unique id if the record is not a resource
+	fn unique_id(&self) -> Option<u32>;
+
+	/// Return the resource id if the record is a resource
+	fn resource_id(&self) -> Option<u16>;
+
+	/// Construct a record with the given parameters
+	fn construct_record(
+		attributes: RecordAttributes,
+		unique_id: u32,
+		data_offset: u32,
+		data_len: Option<u32>,
+	) -> Self;
+
+	/// Construct a resource with the given parameters
+	fn construct_resource(
+		name: &[u8; 4],
+		record_id: u16,
+		data_offset: u32,
+		data_len: Option<u32>,
+	) -> Self;
 }
 
 mod sealed {
@@ -42,3 +64,5 @@ mod sealed {
 }
 
 pub(crate) use sealed::DatabaseRecordHelpers;
+
+use self::pdb_record::RecordAttributes;

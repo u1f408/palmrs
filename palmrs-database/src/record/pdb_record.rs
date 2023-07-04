@@ -12,6 +12,72 @@ use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use super::sealed::DatabaseRecordHelpers;
 use crate::{header::DatabaseHeader, record::DatabaseRecord};
 
+/// Attributes used for Palm Database Records (not Resources)
+///
+/// This is a more human-friendly representation of the attributes byte
+/// used by the on-disk record header format. Conversion to/from
+/// the attributes byte is handled by the respective `From<u8>`
+/// and `From<RecordAttributes>` implementations.
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub struct RecordAttributes {
+	pub delete: bool,
+	pub dirty: bool,
+	pub busy: bool,
+	pub secret: bool,
+
+	pub category: u8,
+}
+
+impl RecordAttributes {
+	const SECRET: u8 = 0x10;
+	const BUSY: u8 = 0x20;
+	const DIRTY: u8 = 0x40;
+	const DELETE: u8 = 0x80;
+
+	const CATEGORY_MASK: u8 = 0x0F;
+}
+
+impl From<u8> for RecordAttributes {
+	fn from(value: u8) -> Self {
+		Self {
+			delete: (value & Self::DELETE) != 0,
+			dirty: (value & Self::DIRTY) != 0,
+			busy: (value & Self::BUSY) != 0,
+			secret: (value & Self::SECRET) != 0,
+			category: value & Self::CATEGORY_MASK,
+		}
+	}
+}
+
+impl From<RecordAttributes> for u8 {
+	fn from(value: RecordAttributes) -> Self {
+		let RecordAttributes {
+			delete,
+			dirty,
+			busy,
+			secret,
+			category,
+		} = value;
+
+		let mut attributes = category;
+
+		if delete {
+			attributes |= RecordAttributes::DELETE
+		}
+		if dirty {
+			attributes |= RecordAttributes::DIRTY
+		}
+		if busy {
+			attributes |= RecordAttributes::BUSY
+		}
+		if secret {
+			attributes |= RecordAttributes::SECRET
+		}
+
+		attributes
+	}
+}
+
 /// Generic Palm database record header
 ///
 /// This type can represent either a "record" or a "resource" within a Palm OS database:
@@ -29,7 +95,7 @@ use crate::{header::DatabaseHeader, record::DatabaseRecord};
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum PdbRecordHeader {
 	Record {
-		attributes: u8,
+		attributes: RecordAttributes,
 		unique_id: u32,
 		data_offset: u32,
 		data_len: Option<u32>,
@@ -72,7 +138,7 @@ impl DatabaseRecord for PdbRecordHeader {
 			// Type bit clear: construct "records"
 
 			let data_offset = rdr.read_u32::<BigEndian>()?;
-			let attributes = rdr.read_u8()?;
+			let attributes = rdr.read_u8()?.into();
 			let unique_id = rdr.read_u24::<BigEndian>()?;
 
 			Self::Record {
@@ -151,7 +217,7 @@ impl DatabaseRecord for PdbRecordHeader {
 				..
 			} => {
 				buf.write_u32::<BigEndian>(*data_offset)?;
-				buf.write_u8(*attributes)?;
+				buf.write_u8(u8::from(*attributes))?;
 				buf.write_u24::<BigEndian>(*unique_id)?;
 			}
 
@@ -195,9 +261,9 @@ impl DatabaseRecord for PdbRecordHeader {
 		}
 	}
 
-	fn attributes(&self) -> Option<u32> {
+	fn attributes(&self) -> Option<RecordAttributes> {
 		match self {
-			Self::Record { attributes, .. } => Some(*attributes as u32),
+			Self::Record { attributes, .. } => Some(*attributes),
 			_ => None,
 		}
 	}
@@ -207,6 +273,69 @@ impl DatabaseRecord for PdbRecordHeader {
 			Self::Record { data_len, .. } => *data_len,
 			Self::Resource { data_len, .. } => *data_len,
 		}
+	}
+
+	fn unique_id(&self) -> Option<u32> {
+		match self {
+			PdbRecordHeader::Record { unique_id, .. } => Some(*unique_id),
+			PdbRecordHeader::Resource { .. } => None,
+		}
+	}
+
+	fn resource_id(&self) -> Option<u16> {
+		match self {
+			PdbRecordHeader::Record { .. } => None,
+			PdbRecordHeader::Resource { record_id, .. } => Some(*record_id),
+		}
+	}
+
+	fn construct_record(
+		attributes: RecordAttributes,
+		unique_id: u32,
+		data_offset: u32,
+		data_len: Option<u32>,
+	) -> Self {
+		let mut record_initial = PdbRecordHeader::Record {
+			attributes,
+			unique_id,
+			data_offset,
+			data_len,
+		};
+
+		let struct_offset = record_initial.struct_len() as u32;
+		if let PdbRecordHeader::Record {
+			ref mut data_offset,
+			..
+		} = record_initial
+		{
+			*data_offset += struct_offset;
+		}
+		record_initial
+	}
+
+	fn construct_resource(
+		name: &[u8; 4],
+		record_id: u16,
+		data_offset: u32,
+		data_len: Option<u32>,
+	) -> Self {
+		let mut initial = PdbRecordHeader::Resource {
+			name: *name,
+			record_id,
+			data_offset,
+			data_len,
+		};
+
+		let struct_offset = initial.struct_len() as u32;
+		if let PdbRecordHeader::Resource {
+			ref mut data_offset,
+			..
+		} = initial
+		{
+			*data_offset += struct_offset;
+		}
+
+		initial
 	}
 }
 

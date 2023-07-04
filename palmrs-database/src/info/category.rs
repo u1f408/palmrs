@@ -9,14 +9,6 @@ use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{header::DatabaseHeader, info::ExtraInfoRecord};
 
-/// Item record category bitmask
-///
-/// Using the value of this constant as a bitmask on the `attributes` field of a
-/// [`PdbRecordHeader::Record`][crate::record::pdb_record::PdbRecordHeader::Record] will give you
-/// the category ID as an integer in the range `0..15`.
-#[allow(unused_variables)]
-pub const CATEGORY_ATTRIBUTE_MASK: u8 = 0x0F;
-
 /// Representation of an item category
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ExtraInfoCategory {

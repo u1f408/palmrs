@@ -4,12 +4,19 @@ use core::{
 	fmt::{self, Debug, Display},
 	marker::PhantomData,
 };
-use std::io::{self, Cursor, Read, Write};
+use std::{
+	collections::HashSet,
+	io::{self, Cursor, Read, Write},
+};
 
 use crate::{
 	header::DatabaseHeader,
 	info::{category::AppInfoCategories, ExtraInfoRecord, NullExtraInfo},
-	record::{pdb_record::PdbRecordHeader, DatabaseRecord, DatabaseRecordHelpers},
+	record::{
+		pdb_record::{PdbRecordHeader, RecordAttributes},
+		DatabaseRecord,
+		DatabaseRecordHelpers,
+	},
 };
 
 // add 2 bytes of padding for < os3.5 compatible PRCs
@@ -153,7 +160,7 @@ impl<'a, T: DatabaseFormat> PalmDatabase<'a, T> {
 		})
 	}
 
-	pub fn to_bytes(self) -> std::io::Result<Vec<u8>> {
+	pub fn to_bytes(&self) -> std::io::Result<Vec<u8>> {
 		let mut cursor = Cursor::new(self.header.to_bytes()?);
 		cursor.set_position(cursor.get_ref().len() as u64);
 
@@ -181,13 +188,71 @@ impl<'a, T: DatabaseFormat> PalmDatabase<'a, T> {
 		&self.records
 	}
 
-	pub fn insert_record() {}
+	/// Create a new record in the database, returning the ID of the new record
+	pub fn insert_record(&mut self, attributes: RecordAttributes, data: &[u8]) -> u32 {
+		let headers = self
+			.list_records_resources()
+			.into_iter()
+			.map(|(hdr, _)| hdr)
+			.collect::<Vec<_>>();
+		let used_ids = headers
+			.clone()
+			.into_iter()
+			.filter_map(DatabaseRecord::unique_id)
+			.collect::<HashSet<_>>();
+		let unique_id = (0..).find(|x| !used_ids.contains(x)).unwrap();
 
-	pub fn insert_resource() {}
+		let record = {
+			let record_header_offset = headers
+				.iter()
+				.last()
+				.map(|hdr| hdr.data_offset() + hdr.data_len().unwrap_or(0))
+				.unwrap_or_else(|| self.to_bytes().unwrap().len() as u32);
+			let data_len = match data.len() {
+				0 => None,
+				other => Some(other as u32),
+			};
 
-	pub fn remove_record() {}
+			T::RecordHeader::construct_record(attributes, unique_id, record_header_offset, data_len)
+		};
 
-	pub fn remove_resources() {}
+		self.records.push((record, data.to_owned()));
+
+		unique_id
+	}
+
+	/// Create a new resource in the database, returning the ID of the new record
+	pub fn insert_resource(&mut self, name: &[u8; 4], data: &[u8]) -> u16 {
+		let headers = self
+			.list_records_resources()
+			.into_iter()
+			.map(|(hdr, _)| hdr)
+			.collect::<Vec<_>>();
+		let used_ids = headers
+			.clone()
+			.into_iter()
+			.filter_map(DatabaseRecord::resource_id)
+			.collect::<HashSet<_>>();
+		let unique_id = (0..).find(|x| !used_ids.contains(x)).unwrap();
+
+		let record = {
+			let record_header_offset = headers
+				.iter()
+				.last()
+				.map(|hdr| hdr.data_offset() + hdr.data_len().unwrap_or(0))
+				.unwrap_or_else(|| self.to_bytes().unwrap().len() as u32);
+			let data_len = match data.len() {
+				0 => None,
+				other => Some(other as u32),
+			};
+
+			T::RecordHeader::construct_resource(name, unique_id, record_header_offset, data_len)
+		};
+
+		self.records.push((record, data.to_owned()));
+
+		unique_id
+	}
 }
 
 impl<'a, T: DatabaseFormat> Debug for PalmDatabase<'a, T> {

@@ -21,7 +21,7 @@ fn read_header() {
 
 #[test]
 fn read_database_full() {
-	let database = PalmDatabase::<PrcDatabase>::from_bytes(&EXAMPLE_PRC).unwrap();
+	let database = dbg!(PalmDatabase::<PrcDatabase>::from_bytes(&EXAMPLE_PRC).unwrap());
 	// Test record iteration
 	for (_idx, (rec_hdr, rec_data)) in (0..).zip(database.list_records_resources().iter()) {
 		assert_eq!(rec_data.len(), rec_hdr.data_len().unwrap_or(0) as usize);

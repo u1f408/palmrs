@@ -129,7 +129,7 @@ where
 
 	let data_offset = rec_hdr.data_offset() as usize;
 	let data_len = rec_hdr.data_len().map(|x| x as usize).unwrap_or(0usize);
-	let attributes = rec_hdr.attributes().unwrap_or(0);
+	let attributes = rec_hdr.attributes().unwrap_or_default();
 
 	println!(
 		"Record {}: name={:?} offset={:#X} length={:#X} attributes={:#X}",
@@ -137,7 +137,7 @@ where
 		rec_hdr.name_str().unwrap_or(""),
 		data_offset,
 		data_len,
-		attributes,
+		u8::from(attributes),
 	);
 
 	if opt.hexdump_records {
