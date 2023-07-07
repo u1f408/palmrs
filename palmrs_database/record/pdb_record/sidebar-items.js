@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["PdbRecordHeader"],"trait":["PdbRecordHeaderTrait"]};
+window.SIDEBAR_ITEMS = {"enum":["PdbRecordHeader"],"struct":["RecordAttributes"]};

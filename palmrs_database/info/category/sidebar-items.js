@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["CATEGORY_ATTRIBUTE_MASK"],"struct":["AppInfoCategories","ExtraInfoCategory"]};
+window.SIDEBAR_ITEMS = {"struct":["AppInfoCategories","ExtraInfoCategory"]};

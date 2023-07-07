@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `palmrs-database/src/record/pdb_record.rs`."><title>pdb_record.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-8092eaa720ad3b6f.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="palmrs_database" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0-nightly (5ea666864 2023-06-27)" data-channel="nightly" data-search-js="search-c507e026dd61038c.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ></div><script src="../../../static.files/storage-62ce34ea385b278a.js"></script><script defer src="../../../static.files/source-script-11255107d0a65077.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../palmrs_database/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `palmrs-database/src/record/pdb_record.rs`."><title>pdb_record.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="palmrs_database" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0-nightly (85bf07972 2023-07-06)" data-channel="nightly" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../palmrs_database/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -272,6 +272,123 @@
 <a href="#272" id="272">272</a>
 <a href="#273" id="273">273</a>
 <a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Palm database record headers
 //!
 //! This module contains the [`PdbRecordHeader`] enum, representing either a &quot;record&quot; or a
@@ -283,27 +400,72 @@
 
 <span class="kw">use </span>byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 
+<span class="kw">use </span><span class="kw">super</span>::sealed::DatabaseRecordHelpers;
 <span class="kw">use crate</span>::{header::DatabaseHeader, record::DatabaseRecord};
 
-<span class="doccomment">/// Generic record header type helper trait
-</span><span class="kw">pub trait </span>PdbRecordHeaderTrait {
-	<span class="kw">fn </span>record_struct_len(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize;
-	<span class="kw">fn </span>next_entry_data_offset(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize;
+<span class="doccomment">/// Attributes used for Palm Database Records (not Resources)
+///
+/// This is a more human-friendly representation of the attributes byte
+/// used by the on-disk record header format. Conversion to/from
+/// the attributes byte is handled by the respective `From&lt;u8&gt;`
+/// and `From&lt;RecordAttributes&gt;` implementations.
+</span><span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Default)]
+</span><span class="kw">pub struct </span>RecordAttributes {
+	<span class="kw">pub </span>delete: bool,
+	<span class="kw">pub </span>dirty: bool,
+	<span class="kw">pub </span>busy: bool,
+	<span class="kw">pub </span>secret: bool,
+
+	<span class="kw">pub </span>category: u8,
 }
 
-<span class="doccomment">/// &quot;Resource&quot; header type
-</span><span class="kw">impl </span>PdbRecordHeaderTrait <span class="kw">for </span>PdbRecordHeader {
-	<span class="kw">fn </span>record_struct_len(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
-		<span class="kw">match </span><span class="self">self </span>{
-			PdbRecordHeader::Record { .. } =&gt; <span class="number">8</span>,
-			PdbRecordHeader::Resource { .. } =&gt; <span class="number">10</span>,
+<span class="kw">impl </span>RecordAttributes {
+	<span class="kw">const </span>SECRET: u8 = <span class="number">0x10</span>;
+	<span class="kw">const </span>BUSY: u8 = <span class="number">0x20</span>;
+	<span class="kw">const </span>DIRTY: u8 = <span class="number">0x40</span>;
+	<span class="kw">const </span>DELETE: u8 = <span class="number">0x80</span>;
+
+	<span class="kw">const </span>CATEGORY_MASK: u8 = <span class="number">0x0F</span>;
+}
+
+<span class="kw">impl </span>From&lt;u8&gt; <span class="kw">for </span>RecordAttributes {
+	<span class="kw">fn </span>from(value: u8) -&gt; <span class="self">Self </span>{
+		<span class="self">Self </span>{
+			delete: (value &amp; <span class="self">Self</span>::DELETE) != <span class="number">0</span>,
+			dirty: (value &amp; <span class="self">Self</span>::DIRTY) != <span class="number">0</span>,
+			busy: (value &amp; <span class="self">Self</span>::BUSY) != <span class="number">0</span>,
+			secret: (value &amp; <span class="self">Self</span>::SECRET) != <span class="number">0</span>,
+			category: value &amp; <span class="self">Self</span>::CATEGORY_MASK,
 		}
 	}
-	<span class="kw">fn </span>next_entry_data_offset(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
-		<span class="kw">match </span><span class="self">self </span>{
-			PdbRecordHeader::Record { .. } =&gt; <span class="number">0</span>,
-			PdbRecordHeader::Resource { .. } =&gt; <span class="number">6</span>,
+}
+
+<span class="kw">impl </span>From&lt;RecordAttributes&gt; <span class="kw">for </span>u8 {
+	<span class="kw">fn </span>from(value: RecordAttributes) -&gt; <span class="self">Self </span>{
+		<span class="kw">let </span>RecordAttributes {
+			delete,
+			dirty,
+			busy,
+			secret,
+			category,
+		} = value;
+
+		<span class="kw">let </span><span class="kw-2">mut </span>attributes = category;
+
+		<span class="kw">if </span>delete {
+			attributes |= RecordAttributes::DELETE
 		}
+		<span class="kw">if </span>dirty {
+			attributes |= RecordAttributes::DIRTY
+		}
+		<span class="kw">if </span>busy {
+			attributes |= RecordAttributes::BUSY
+		}
+		<span class="kw">if </span>secret {
+			attributes |= RecordAttributes::SECRET
+		}
+
+		attributes
 	}
 }
 
@@ -324,7 +486,7 @@
 </span><span class="attr">#[derive(Debug, Copy, Clone, PartialEq)]
 </span><span class="kw">pub enum </span>PdbRecordHeader {
 	Record {
-		attributes: u8,
+		attributes: RecordAttributes,
 		unique_id: u32,
 		data_offset: u32,
 		data_len: <span class="prelude-ty">Option</span>&lt;u32&gt;,
@@ -338,20 +500,36 @@
 	},
 }
 
-<span class="kw">impl </span>DatabaseRecord <span class="kw">for </span>PdbRecordHeader {
+<span class="kw">impl </span>DatabaseRecordHelpers <span class="kw">for </span>PdbRecordHeader {
 	<span class="kw">fn </span>struct_len(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
-		&lt;<span class="self">Self </span><span class="kw">as </span>PdbRecordHeaderTrait&gt;::record_struct_len(<span class="self">self</span>)
+		<span class="kw">match </span><span class="self">self </span>{
+			PdbRecordHeader::Record { .. } =&gt; <span class="number">8</span>,
+			PdbRecordHeader::Resource { .. } =&gt; <span class="number">10</span>,
+		}
 	}
 
-	<span class="kw">fn </span>from_bytes(hdr: <span class="kw-2">&amp;</span>DatabaseHeader, data: <span class="kw-2">&amp;</span>[u8], pos: usize) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, io::Error&gt; {
-		<span class="kw">let </span><span class="kw-2">mut </span>rdr = Cursor::new(<span class="kw-2">&amp;</span>data);
-		rdr.seek(SeekFrom::Start(pos <span class="kw">as </span>u64))<span class="question-mark">?</span>;
+	<span class="kw">fn </span>next_entry_data_offset(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+		<span class="kw">match </span><span class="self">self </span>{
+			PdbRecordHeader::Record { .. } =&gt; <span class="number">0</span>,
+			PdbRecordHeader::Resource { .. } =&gt; <span class="number">6</span>,
+		}
+	}
 
+	<span class="kw">fn </span>data_offset(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
+		<span class="kw">match </span><span class="self">self </span>{
+			<span class="self">Self</span>::Record { data_offset, .. } =&gt; <span class="kw-2">*</span>data_offset,
+			<span class="self">Self</span>::Resource { data_offset, .. } =&gt; <span class="kw-2">*</span>data_offset,
+		}
+	}
+}
+
+<span class="kw">impl </span>DatabaseRecord <span class="kw">for </span>PdbRecordHeader {
+	<span class="kw">fn </span>from_bytes(hdr: <span class="kw-2">&amp;</span>DatabaseHeader, rdr: <span class="kw-2">&amp;mut </span>Cursor&lt;<span class="kw-2">&amp;</span>[u8]&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, io::Error&gt; {
 		<span class="kw">let </span><span class="kw-2">mut </span>this = <span class="kw">if </span>hdr.attributes &amp; (<span class="number">1 </span>&lt;&lt; <span class="number">0</span>) == <span class="number">0 </span>{
 			<span class="comment">// Type bit clear: construct &quot;records&quot;
 
 			</span><span class="kw">let </span>data_offset = rdr.read_u32::&lt;BigEndian&gt;()<span class="question-mark">?</span>;
-			<span class="kw">let </span>attributes = rdr.read_u8()<span class="question-mark">?</span>;
+			<span class="kw">let </span>attributes = rdr.read_u8()<span class="question-mark">?</span>.into();
 			<span class="kw">let </span>unique_id = rdr.read_u24::&lt;BigEndian&gt;()<span class="question-mark">?</span>;
 
 			<span class="self">Self</span>::Record {
@@ -393,14 +571,14 @@
 						<span class="kw">if </span>next_offset &gt; data_offset {
 							next_offset - data_offset
 						} <span class="kw">else </span>{
-							(data.len() <span class="kw">as </span>u32) - data_offset
+							(rdr.get_ref().len() <span class="kw">as </span>u32) - data_offset
 						}
 					}
 
-					<span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; (data.len() <span class="kw">as </span>u32) - data_offset,
+					<span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; (rdr.get_ref().len() <span class="kw">as </span>u32) - data_offset,
 				},
 
-				<span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; (data.len() <span class="kw">as </span>u32) - data_offset,
+				<span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; (rdr.get_ref().len() <span class="kw">as </span>u32) - data_offset,
 			};
 
 			rdr.seek(SeekFrom::Start(position))<span class="question-mark">?</span>;
@@ -430,7 +608,7 @@
 				..
 			} =&gt; {
 				buf.write_u32::&lt;BigEndian&gt;(<span class="kw-2">*</span>data_offset)<span class="question-mark">?</span>;
-				buf.write_u8(<span class="kw-2">*</span>attributes)<span class="question-mark">?</span>;
+				buf.write_u8(u8::from(<span class="kw-2">*</span>attributes))<span class="question-mark">?</span>;
 				buf.write_u24::&lt;BigEndian&gt;(<span class="kw-2">*</span>unique_id)<span class="question-mark">?</span>;
 			}
 
@@ -474,17 +652,10 @@
 		}
 	}
 
-	<span class="kw">fn </span>attributes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;u32&gt; {
+	<span class="kw">fn </span>attributes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;RecordAttributes&gt; {
 		<span class="kw">match </span><span class="self">self </span>{
-			<span class="self">Self</span>::Record { attributes, .. } =&gt; <span class="prelude-val">Some</span>(<span class="kw-2">*</span>attributes <span class="kw">as </span>u32),
+			<span class="self">Self</span>::Record { attributes, .. } =&gt; <span class="prelude-val">Some</span>(<span class="kw-2">*</span>attributes),
 			<span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
-		}
-	}
-
-	<span class="kw">fn </span>data_offset(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
-		<span class="kw">match </span><span class="self">self </span>{
-			<span class="self">Self</span>::Record { data_offset, .. } =&gt; <span class="kw-2">*</span>data_offset,
-			<span class="self">Self</span>::Resource { data_offset, .. } =&gt; <span class="kw-2">*</span>data_offset,
 		}
 	}
 
@@ -494,13 +665,78 @@
 			<span class="self">Self</span>::Resource { data_len, .. } =&gt; <span class="kw-2">*</span>data_len,
 		}
 	}
+
+	<span class="kw">fn </span>unique_id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;u32&gt; {
+		<span class="kw">match </span><span class="self">self </span>{
+			PdbRecordHeader::Record { unique_id, .. } =&gt; <span class="prelude-val">Some</span>(<span class="kw-2">*</span>unique_id),
+			PdbRecordHeader::Resource { .. } =&gt; <span class="prelude-val">None</span>,
+		}
+	}
+
+	<span class="kw">fn </span>resource_id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;u16&gt; {
+		<span class="kw">match </span><span class="self">self </span>{
+			PdbRecordHeader::Record { .. } =&gt; <span class="prelude-val">None</span>,
+			PdbRecordHeader::Resource { record_id, .. } =&gt; <span class="prelude-val">Some</span>(<span class="kw-2">*</span>record_id),
+		}
+	}
+
+	<span class="kw">fn </span>construct_record(
+		attributes: RecordAttributes,
+		unique_id: u32,
+		data_offset: u32,
+		data_len: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+	) -&gt; <span class="self">Self </span>{
+		<span class="kw">let </span><span class="kw-2">mut </span>record_initial = PdbRecordHeader::Record {
+			attributes,
+			unique_id,
+			data_offset,
+			data_len,
+		};
+
+		<span class="kw">let </span>struct_offset = record_initial.struct_len() <span class="kw">as </span>u32;
+		<span class="kw">if let </span>PdbRecordHeader::Record {
+			<span class="kw-2">ref mut </span>data_offset,
+			..
+		} = record_initial
+		{
+			<span class="kw-2">*</span>data_offset += struct_offset;
+		}
+		record_initial
+	}
+
+	<span class="kw">fn </span>construct_resource(
+		name: <span class="kw-2">&amp;</span>[u8; <span class="number">4</span>],
+		record_id: u16,
+		data_offset: u32,
+		data_len: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+	) -&gt; <span class="self">Self </span>{
+		<span class="kw">let </span><span class="kw-2">mut </span>initial = PdbRecordHeader::Resource {
+			name: <span class="kw-2">*</span>name,
+			record_id,
+			data_offset,
+			data_len,
+		};
+
+		<span class="kw">let </span>struct_offset = initial.struct_len() <span class="kw">as </span>u32;
+		<span class="kw">if let </span>PdbRecordHeader::Resource {
+			<span class="kw-2">ref mut </span>data_offset,
+			..
+		} = initial
+		{
+			<span class="kw-2">*</span>data_offset += struct_offset;
+		}
+
+		initial
+	}
 }
 
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>test {
+	<span class="kw">use </span>std::io::Cursor;
+
 	<span class="kw">use crate</span>::{
 		header::DATABASE_HEADER_LENGTH,
-		record::{pdb_record::PdbRecordHeader, DatabaseRecord},
+		record::{pdb_record::PdbRecordHeader, DatabaseRecord, DatabaseRecordHelpers},
 		DatabaseFormat,
 		PalmDatabase,
 		PdbDatabase,
@@ -523,17 +759,15 @@
 			database.header.name_try_str().unwrap()
 		);
 		<span class="kw">let </span><span class="kw-2">mut </span>rec_start_offset = DATABASE_HEADER_LENGTH;
+		<span class="kw">let </span><span class="kw-2">mut </span>cursor = Cursor::new(database.original_data);
+		cursor.set_position(rec_start_offset <span class="kw">as </span>u64);
 		<span class="comment">// Test record iteration
-		</span><span class="kw">for </span>(_idx, (rec_hdr, rec_data)) <span class="kw">in </span>(<span class="number">0</span>..).zip(database.records.iter()) {
+		</span><span class="kw">for </span>(_idx, (rec_hdr, rec_data)) <span class="kw">in </span>(<span class="number">0</span>..).zip(database.list_records_resources().iter()) {
 			<span class="macro">assert_eq!</span>(rec_data.len(), rec_hdr.data_len().unwrap_or(<span class="number">0</span>) <span class="kw">as </span>usize);
+
 			<span class="macro">assert_eq!</span>(
 				rec_hdr,
-				<span class="kw-2">&amp;</span>PdbRecordHeader::from_bytes(
-					<span class="kw-2">&amp;</span>database.header,
-					database.original_data,
-					rec_start_offset
-				)
-				.unwrap()
+				<span class="kw-2">&amp;</span>PdbRecordHeader::from_bytes(<span class="kw-2">&amp;</span>database.header, <span class="kw-2">&amp;mut </span>cursor).unwrap()
 			);
 			rec_start_offset += rec_hdr.struct_len();
 		}
