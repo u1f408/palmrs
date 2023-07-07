@@ -17,7 +17,6 @@ pub const DATABASE_HEADER_LENGTH: usize = 78;
 ///
 /// This is located at the start of the database (offset `0`).
 #[derive(Debug, Copy, Clone, PartialEq)]
-#[repr(C, packed)]
 pub struct DatabaseHeader {
 	pub name: [u8; 32],
 	pub attributes: u16,
@@ -39,9 +38,7 @@ impl DatabaseHeader {
 	pub const SIZE: usize = DATABASE_HEADER_LENGTH;
 
 	/// Read the database header from the given byte slice.
-	pub fn from_bytes(data: &[u8]) -> Result<Self, io::Error> {
-		let mut rdr = Cursor::new(&data[..DATABASE_HEADER_LENGTH]);
-
+	pub fn from_bytes(rdr: &mut Cursor<&[u8]>) -> Result<Self, io::Error> {
 		// Read all the data
 
 		let name = {
@@ -97,7 +94,7 @@ impl DatabaseHeader {
 		Ok(created_header)
 	}
 
-	pub fn to_bytes(self) -> std::io::Result<Vec<u8>> {
+	pub fn to_bytes(&self) -> std::io::Result<Vec<u8>> {
 		let mut cursor = Cursor::new(vec![0_u8; Self::SIZE]);
 
 		let DatabaseHeader {
@@ -117,20 +114,20 @@ impl DatabaseHeader {
 			record_count,
 		} = self;
 
-		cursor.write(&name)?;
-		cursor.write_u16::<BigEndian>(attributes)?;
-		cursor.write_u16::<BigEndian>(version)?;
+		cursor.write(name)?;
+		cursor.write_u16::<BigEndian>(*attributes)?;
+		cursor.write_u16::<BigEndian>(*version)?;
 		cursor.write_u32::<BigEndian>(creation_time.0)?;
 		cursor.write_u32::<BigEndian>(modification_time.0)?;
 		cursor.write_u32::<BigEndian>(backup_time.0)?;
-		cursor.write_u32::<BigEndian>(modification_number)?;
-		cursor.write_u32::<BigEndian>(app_info_id)?;
-		cursor.write_u32::<BigEndian>(sort_info_id)?;
-		cursor.write(&type_code)?;
-		cursor.write(&creator_code)?;
-		cursor.write_u32::<BigEndian>(unique_id_seed)?;
-		cursor.write_u32::<BigEndian>(next_record_list)?;
-		cursor.write_u16::<BigEndian>(record_count)?;
+		cursor.write_u32::<BigEndian>(*modification_number)?;
+		cursor.write_u32::<BigEndian>(*app_info_id)?;
+		cursor.write_u32::<BigEndian>(*sort_info_id)?;
+		cursor.write(type_code)?;
+		cursor.write(creator_code)?;
+		cursor.write_u32::<BigEndian>(*unique_id_seed)?;
+		cursor.write_u32::<BigEndian>(*next_record_list)?;
+		cursor.write_u16::<BigEndian>(*record_count)?;
 
 		Ok(cursor.into_inner())
 	}

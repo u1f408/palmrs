@@ -10,6 +10,7 @@ use subprocess::Redirection;
 #[structopt(name = "palmrs-sync-dbgconduit")]
 struct Opt {
 	/// Path to sync configuration
+	#[allow(unused)]
 	#[structopt(short, long)]
 	config: Option<PathBuf>,
 

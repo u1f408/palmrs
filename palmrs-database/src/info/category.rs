@@ -3,19 +3,11 @@
 //! Item category record helpers
 
 use core::{fmt::Debug, str};
-use std::io::{self, Cursor, Read, Seek, SeekFrom, Write};
+use std::io::{self, Cursor, Read, Write};
 
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::{header::DatabaseHeader, info::ExtraInfoRecord};
-
-/// Item record category bitmask
-///
-/// Using the value of this constant as a bitmask on the `attributes` field of a
-/// [`PdbRecordHeader::Record`][crate::record::pdb_record::PdbRecordHeader::Record] will give you
-/// the category ID as an integer in the range `0..15`.
-#[allow(unused_variables)]
-pub const CATEGORY_ATTRIBUTE_MASK: u8 = 0x0F;
 
 /// Representation of an item category
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -75,14 +67,11 @@ pub struct AppInfoCategories {
 }
 
 impl AppInfoCategories {
-	pub fn from_bytes(hdr: &DatabaseHeader, data: &[u8], pos: usize) -> Result<Self, io::Error> {
+	pub fn from_bytes(hdr: &DatabaseHeader, rdr: &mut Cursor<&[u8]>) -> Result<Self, io::Error> {
 		// Do a quick check by type/creator codes for whether we should actually have categories
 		if &hdr.type_code[..] != b"DATA" {
 			return Ok(Default::default());
 		}
-
-		let mut rdr = Cursor::new(&data);
-		rdr.seek(SeekFrom::Start(pos as u64))?;
 
 		let mut categories = Vec::new();
 		let renamed_flags = rdr.read_u16::<BigEndian>()?;
@@ -126,8 +115,8 @@ impl AppInfoCategories {
 impl ExtraInfoRecord for AppInfoCategories {
 	const SIZE: usize = 2 + 16 * 16 + 16 + 1 + 1;
 
-	fn from_bytes(hdr: &DatabaseHeader, data: &[u8], pos: usize) -> Result<Self, io::Error> {
-		Self::from_bytes(hdr, data, pos)
+	fn from_bytes(hdr: &DatabaseHeader, data: &mut Cursor<&[u8]>) -> Result<Self, io::Error> {
+		Self::from_bytes(hdr, data)
 	}
 
 	fn to_bytes(&self) -> Result<Vec<u8>, io::Error> {

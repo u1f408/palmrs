@@ -1,7 +1,7 @@
 //! App info & sort info parsers and helpers
 
 use core::fmt::Debug;
-use std::io;
+use std::io::{self, Cursor};
 
 use crate::header::DatabaseHeader;
 
@@ -13,7 +13,7 @@ pub trait ExtraInfoRecord: Sized + Debug {
 	const SIZE: usize;
 
 	/// Read the record header from the given byte array
-	fn from_bytes(hdr: &DatabaseHeader, data: &[u8], pos: usize) -> Result<Self, io::Error>;
+	fn from_bytes(hdr: &DatabaseHeader, data: &mut Cursor<&[u8]>) -> Result<Self, io::Error>;
 
 	/// Write the record header to a new `Vec<u8>`
 	fn to_bytes(&self) -> Result<Vec<u8>, io::Error>;
@@ -33,7 +33,7 @@ pub struct NullExtraInfo;
 impl ExtraInfoRecord for NullExtraInfo {
 	const SIZE: usize = 0;
 
-	fn from_bytes(_hdr: &DatabaseHeader, _data: &[u8], _pos: usize) -> Result<Self, io::Error> {
+	fn from_bytes(_hdr: &DatabaseHeader, _data: &mut Cursor<&[u8]>) -> Result<Self, io::Error> {
 		Ok(Self)
 	}
 

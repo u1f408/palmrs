@@ -10,7 +10,7 @@ use std::{
 use byteorder::{BigEndian, ReadBytesExt};
 use palmrs::{
 	database::{
-		info::{category::CATEGORY_ATTRIBUTE_MASK, ExtraInfoRecord},
+		info::ExtraInfoRecord,
 		record::DatabaseRecord,
 		PalmDatabase,
 		PdbWithCategoriesDatabase,
@@ -106,17 +106,19 @@ pub fn device_database_parse(db_path: &Path) -> Result<Vec<ToDoTask>, Report> {
 	};
 
 	let mut tasks = Vec::new();
-	'dbtaskparse: for (idx, (rec_hdr, rec_data)) in (0..).zip(database.records.iter()) {
+	'dbtaskparse: for (idx, (rec_hdr, rec_data)) in
+		(0..).zip(database.list_records_resources().iter())
+	{
 		log::trace!("records[{}].rec_hdr = {:?}", idx, &rec_hdr);
 		if rec_hdr.data_len().unwrap_or(0) == 0 {
 			break 'dbtaskparse;
 		}
 
 		// Get category from record attributes
-		let rec_attributes = rec_hdr.attributes().unwrap_or(0u32);
+		let rec_attributes = rec_hdr.attributes().unwrap_or_default();
 		let category = {
 			let mut catname: Option<String> = None;
-			let catid = ((rec_attributes & 0xFF) as u8) & CATEGORY_ATTRIBUTE_MASK;
+			let catid = rec_attributes.category;
 			'catsearch: for (x_catid, x_catname) in categories.iter() {
 				if catid == *x_catid {
 					catname = Some(x_catname.clone());

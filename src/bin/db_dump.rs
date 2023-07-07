@@ -129,7 +129,7 @@ where
 
 	let data_offset = rec_hdr.data_offset() as usize;
 	let data_len = rec_hdr.data_len().map(|x| x as usize).unwrap_or(0usize);
-	let attributes = rec_hdr.attributes().unwrap_or(0);
+	let attributes = rec_hdr.attributes().unwrap_or_default();
 
 	println!(
 		"Record {}: name={:?} offset={:#X} length={:#X} attributes={:#X}",
@@ -137,7 +137,7 @@ where
 		rec_hdr.name_str().unwrap_or(""),
 		data_offset,
 		data_len,
-		attributes,
+		u8::from(attributes),
 	);
 
 	if opt.hexdump_records {
@@ -165,7 +165,7 @@ fn perform_dump<T: DatabaseFormat>(data: &[u8], opt: &Opt) -> Result<(), Report>
 	perform_dump_header(&database.header)?;
 
 	// Dump each record, additionally dumping app info before the first record
-	for (idx, (rec_hdr, rec_data)) in (0..).zip(database.records.iter()) {
+	for (idx, (rec_hdr, rec_data)) in (0..).zip(database.list_records_resources().iter()) {
 		if idx == 0 {
 			perform_dump_app_info(&database.header, &database.app_info, rec_hdr, &data, &opt)?;
 		}
