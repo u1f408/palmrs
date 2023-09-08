@@ -14,8 +14,7 @@ use crate::{
 	info::{category::AppInfoCategories, ExtraInfoRecord, NullExtraInfo},
 	record::{
 		pdb_record::{PdbRecordHeader, RecordAttributes},
-		DatabaseRecord,
-		DatabaseRecordHelpers,
+		DatabaseRecord, DatabaseRecordHelpers,
 	},
 };
 
@@ -89,7 +88,7 @@ impl DatabaseFormat for PdbWithCategoriesDatabase {
 /// This uses the [`DatabaseFormat`] trait to allow making access to database records, as well as
 /// validity checks on the database content, generic across the PRC and PDB implementations.
 #[derive(Clone, PartialEq)]
-pub struct PalmDatabase<'a, T: DatabaseFormat> {
+pub struct PalmDatabase<T: DatabaseFormat> {
 	pub header: DatabaseHeader,
 	pub app_info: T::AppInfoRecord,
 
@@ -99,12 +98,12 @@ pub struct PalmDatabase<'a, T: DatabaseFormat> {
 	/// record headers together with their contained data. This is for convenience,
 	/// and does not match the on-disk layout
 	records: Vec<(T::RecordHeader, Vec<u8>)>,
-	pub(crate) original_data: &'a [u8],
+	pub(crate) original_data: Vec<u8>,
 	_marker: PhantomData<T>,
 }
 
-impl<'a, T: DatabaseFormat> PalmDatabase<'a, T> {
-	pub fn from_bytes(data: &'a [u8]) -> Result<Self, io::Error> {
+impl<T: DatabaseFormat> PalmDatabase<T> {
+	pub fn from_bytes<'a>(data: &'a [u8]) -> Result<Self, io::Error> {
 		let mut rdr = Cursor::new(data);
 		let header = DatabaseHeader::from_bytes(&mut rdr)?;
 
@@ -137,15 +136,17 @@ impl<'a, T: DatabaseFormat> PalmDatabase<'a, T> {
 			let mut buf = vec![0_u8; first_record_data_start - app_info_end];
 			rdr.read_exact(&mut buf)?;
 			application_reserved = buf;
+			dbg!(&application_reserved);
 		} else {
 			application_reserved = Vec::new()
 		};
 
 		let mut records: Vec<(T::RecordHeader, Vec<u8>)> = Vec::new();
 		for record_header in record_headers {
-			let record_data_start = record_header.data_offset();
+			let record_data_start = dbg!(&record_header).data_offset();
 			let record_data_end = record_data_start + record_header.data_len().unwrap_or(0);
 			let mut record_data = vec![0_u8; (record_data_end - record_data_start) as usize];
+
 			rdr.read_exact(&mut record_data)?;
 			records.push((record_header, record_data));
 		}
@@ -155,7 +156,7 @@ impl<'a, T: DatabaseFormat> PalmDatabase<'a, T> {
 			app_info,
 			application_reserved,
 			records,
-			original_data: data,
+			original_data: data.to_vec(),
 			_marker: PhantomData,
 		})
 	}
@@ -255,7 +256,7 @@ impl<'a, T: DatabaseFormat> PalmDatabase<'a, T> {
 	}
 }
 
-impl<'a, T: DatabaseFormat> Debug for PalmDatabase<'a, T> {
+impl<T: DatabaseFormat> Debug for PalmDatabase<T> {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		f.debug_struct("PalmDatabase")
 			.field("type", &std::any::type_name::<T>())
@@ -266,7 +267,7 @@ impl<'a, T: DatabaseFormat> Debug for PalmDatabase<'a, T> {
 	}
 }
 
-impl<'a, T: DatabaseFormat> Display for PalmDatabase<'a, T> {
+impl<T: DatabaseFormat> Display for PalmDatabase<T> {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		write!(
 			f,

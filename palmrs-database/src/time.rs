@@ -62,7 +62,7 @@ impl PalmTimestamp {
 	///
 	/// This uses the formatting specifiers from [`chrono::format::strftime`].
 	pub fn strftime(&self, format: &str) -> String {
-		let datetime = Utc.timestamp(self.as_unix_ts() as i64, 0);
+		let datetime = Utc.timestamp_opt(self.as_unix_ts() as i64, 0).unwrap();
 		datetime.format(format).to_string()
 	}
 }
