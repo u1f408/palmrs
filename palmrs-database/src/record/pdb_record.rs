@@ -175,10 +175,10 @@ impl DatabaseRecord for PdbRecordHeader {
 
 			let position = rdr.stream_position()?;
 			let data_len = match rdr.seek(SeekFrom::Current(this.next_entry_data_offset() as i64)) {
-				Ok(_) => match rdr.read_u32::<BigEndian>() {
+				Ok(_) => match dbg!(rdr.read_u32::<BigEndian>()) {
 					Ok(next_offset) => {
-						if next_offset > data_offset {
-							next_offset - data_offset
+						if next_offset > dbg!(data_offset) {
+							std::cmp::min(next_offset, rdr.get_ref().len() as u32) - data_offset
 						} else {
 							(rdr.get_ref().len() as u32) - data_offset
 						}
@@ -346,11 +346,7 @@ mod test {
 	use crate::{
 		header::DATABASE_HEADER_LENGTH,
 		record::{pdb_record::PdbRecordHeader, DatabaseRecord, DatabaseRecordHelpers},
-		DatabaseFormat,
-		PalmDatabase,
-		PdbDatabase,
-		PdbWithCategoriesDatabase,
-		PrcDatabase,
+		DatabaseFormat, PalmDatabase, PdbDatabase, PdbWithCategoriesDatabase, PrcDatabase,
 	};
 
 	const EXAMPLE_PRC: &'static [u8] = include_bytes!("../../../test-data/hello-v1.prc");
@@ -368,7 +364,7 @@ mod test {
 			database.header.name_try_str().unwrap()
 		);
 		let mut rec_start_offset = DATABASE_HEADER_LENGTH;
-		let mut cursor = Cursor::new(database.original_data);
+		let mut cursor = Cursor::new(database.original_data.as_slice());
 		cursor.set_position(rec_start_offset as u64);
 		// Test record iteration
 		for (_idx, (rec_hdr, rec_data)) in (0..).zip(database.list_records_resources().iter()) {
