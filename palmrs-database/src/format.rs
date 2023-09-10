@@ -131,9 +131,13 @@ impl<T: DatabaseFormat> PalmDatabase<T> {
 
 		let application_reserved: Vec<u8>;
 		let app_info_end = rdr.position() as usize;
-		let first_record_data_start = record_headers[0].data_offset() as usize;
-		if (header.record_count > 0) && (first_record_data_start > app_info_end) {
-			let mut buf = vec![0_u8; first_record_data_start - app_info_end];
+		let app_reserved_end = if let Some(hdr) = record_headers.get(0) {
+			hdr.data_offset() as usize
+		} else {
+			rdr.get_ref().len()
+		};
+		if (header.record_count > 0) && (app_reserved_end > app_info_end) {
+			let mut buf = vec![0_u8; app_reserved_end - app_info_end];
 			rdr.read_exact(&mut buf)?;
 			application_reserved = buf;
 			dbg!(&application_reserved);
