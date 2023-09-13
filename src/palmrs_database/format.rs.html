@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `palmrs-database/src/format.rs`."><title>format.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="palmrs_database" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0-nightly (85bf07972 2023-07-06)" data-channel="nightly" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../palmrs_database/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `palmrs-database/src/format.rs`."><title>format.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-47e7ab555ef2818a.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="palmrs_database" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0-nightly (d9c8274fb 2023-09-12)" data-channel="nightly" data-search-js="search-5d3eaacf19ebf04f.js" data-settings-js="settings-74424d7eec62a23e.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-f194925aa375ae96.css" data-theme-dark-css="dark-1dd4d1ce031e15de.css" data-theme-ayu-css="ayu-49e58d069f567085.css" ><script src="../../static.files/storage-db41da1a38ea3cb8.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-8d035c8cea6edbc4.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-f194925aa375ae96.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-1dd4d1ce031e15de.css"><link rel="stylesheet" href="../../static.files/noscript-cffde32267a19fd6.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../palmrs_database/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -276,6 +276,11 @@
 <a href="#276" id="276">276</a>
 <a href="#277" id="277">277</a>
 <a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Database format helpers
 
 </span><span class="kw">use </span>core::{
@@ -292,8 +297,7 @@
 	info::{category::AppInfoCategories, ExtraInfoRecord, NullExtraInfo},
 	record::{
 		pdb_record::{PdbRecordHeader, RecordAttributes},
-		DatabaseRecord,
-		DatabaseRecordHelpers,
+		DatabaseRecord, DatabaseRecordHelpers,
 	},
 };
 
@@ -367,7 +371,7 @@
 /// This uses the [`DatabaseFormat`] trait to allow making access to database records, as well as
 /// validity checks on the database content, generic across the PRC and PDB implementations.
 </span><span class="attr">#[derive(Clone, PartialEq)]
-</span><span class="kw">pub struct </span>PalmDatabase&lt;<span class="lifetime">&#39;a</span>, T: DatabaseFormat&gt; {
+</span><span class="kw">pub struct </span>PalmDatabase&lt;T: DatabaseFormat&gt; {
 	<span class="kw">pub </span>header: DatabaseHeader,
 	<span class="kw">pub </span>app_info: T::AppInfoRecord,
 
@@ -377,12 +381,12 @@
 	<span class="doccomment">/// record headers together with their contained data. This is for convenience,
 	/// and does not match the on-disk layout
 	</span>records: Vec&lt;(T::RecordHeader, Vec&lt;u8&gt;)&gt;,
-	<span class="kw">pub</span>(<span class="kw">crate</span>) original_data: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[u8],
+	<span class="kw">pub</span>(<span class="kw">crate</span>) original_data: Vec&lt;u8&gt;,
 	_marker: PhantomData&lt;T&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T: DatabaseFormat&gt; PalmDatabase&lt;<span class="lifetime">&#39;a</span>, T&gt; {
-	<span class="kw">pub fn </span>from_bytes(data: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, io::Error&gt; {
+<span class="kw">impl</span>&lt;T: DatabaseFormat&gt; PalmDatabase&lt;T&gt; {
+	<span class="kw">pub fn </span>from_bytes&lt;<span class="lifetime">&#39;a</span>&gt;(data: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, io::Error&gt; {
 		<span class="kw">let </span><span class="kw-2">mut </span>rdr = Cursor::new(data);
 		<span class="kw">let </span>header = DatabaseHeader::from_bytes(<span class="kw-2">&amp;mut </span>rdr)<span class="question-mark">?</span>;
 
@@ -410,20 +414,26 @@
 
 		<span class="kw">let </span>application_reserved: Vec&lt;u8&gt;;
 		<span class="kw">let </span>app_info_end = rdr.position() <span class="kw">as </span>usize;
-		<span class="kw">let </span>first_record_data_start = record_headers[<span class="number">0</span>].data_offset() <span class="kw">as </span>usize;
-		<span class="kw">if </span>(header.record_count &gt; <span class="number">0</span>) &amp;&amp; (first_record_data_start &gt; app_info_end) {
-			<span class="kw">let </span><span class="kw-2">mut </span>buf = <span class="macro">vec!</span>[<span class="number">0_u8</span>; first_record_data_start - app_info_end];
+		<span class="kw">let </span>app_reserved_end = <span class="kw">if let </span><span class="prelude-val">Some</span>(hdr) = record_headers.get(<span class="number">0</span>) {
+			hdr.data_offset() <span class="kw">as </span>usize
+		} <span class="kw">else </span>{
+			rdr.get_ref().len()
+		};
+		<span class="kw">if </span>(header.record_count &gt; <span class="number">0</span>) &amp;&amp; (app_reserved_end &gt; app_info_end) {
+			<span class="kw">let </span><span class="kw-2">mut </span>buf = <span class="macro">vec!</span>[<span class="number">0_u8</span>; app_reserved_end - app_info_end];
 			rdr.read_exact(<span class="kw-2">&amp;mut </span>buf)<span class="question-mark">?</span>;
 			application_reserved = buf;
+			<span class="macro">dbg!</span>(<span class="kw-2">&amp;</span>application_reserved);
 		} <span class="kw">else </span>{
 			application_reserved = Vec::new()
 		};
 
 		<span class="kw">let </span><span class="kw-2">mut </span>records: Vec&lt;(T::RecordHeader, Vec&lt;u8&gt;)&gt; = Vec::new();
 		<span class="kw">for </span>record_header <span class="kw">in </span>record_headers {
-			<span class="kw">let </span>record_data_start = record_header.data_offset();
+			<span class="kw">let </span>record_data_start = <span class="macro">dbg!</span>(<span class="kw-2">&amp;</span>record_header).data_offset();
 			<span class="kw">let </span>record_data_end = record_data_start + record_header.data_len().unwrap_or(<span class="number">0</span>);
 			<span class="kw">let </span><span class="kw-2">mut </span>record_data = <span class="macro">vec!</span>[<span class="number">0_u8</span>; (record_data_end - record_data_start) <span class="kw">as </span>usize];
+
 			rdr.read_exact(<span class="kw-2">&amp;mut </span>record_data)<span class="question-mark">?</span>;
 			records.push((record_header, record_data));
 		}
@@ -433,7 +443,7 @@
 			app_info,
 			application_reserved,
 			records,
-			original_data: data,
+			original_data: data.to_vec(),
 			_marker: PhantomData,
 		})
 	}
@@ -533,7 +543,7 @@
 	}
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T: DatabaseFormat&gt; Debug <span class="kw">for </span>PalmDatabase&lt;<span class="lifetime">&#39;a</span>, T&gt; {
+<span class="kw">impl</span>&lt;T: DatabaseFormat&gt; Debug <span class="kw">for </span>PalmDatabase&lt;T&gt; {
 	<span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
 		f.debug_struct(<span class="string">&quot;PalmDatabase&quot;</span>)
 			.field(<span class="string">&quot;type&quot;</span>, <span class="kw-2">&amp;</span>std::any::type_name::&lt;T&gt;())
@@ -544,7 +554,7 @@
 	}
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T: DatabaseFormat&gt; Display <span class="kw">for </span>PalmDatabase&lt;<span class="lifetime">&#39;a</span>, T&gt; {
+<span class="kw">impl</span>&lt;T: DatabaseFormat&gt; Display <span class="kw">for </span>PalmDatabase&lt;T&gt; {
 	<span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
 		<span class="macro">write!</span>(
 			f,
